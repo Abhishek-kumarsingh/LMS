@@ -8,6 +8,14 @@ import MyCourses from './pages/dashboard/MyCourses';
 import MyCertificates from './pages/dashboard/MyCertificates';
 import ProfilePage from './pages/dashboard/ProfilePage';
 import CoursesPage from './pages/courses/CoursesPage';
+import InstructorDashboard from './pages/instructor/InstructorDashboard';
+import CourseManagement from './pages/instructor/CourseManagement';
+import EarningsAnalytics from './pages/instructor/EarningsAnalytics';
+import StudentManagement from './pages/instructor/StudentManagement';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import UserManagement from './pages/admin/UserManagement';
+import CourseDetailPage from './pages/courses/CourseDetailPage';
+import CourseLearningPage from './pages/courses/CourseLearningPage';
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode, roles?: string[] }> = ({ 
@@ -63,13 +71,22 @@ function App() {
               </ProtectedRoute>
             } 
           />
-          <Route 
-            path="courses" 
+          <Route
+            path="courses"
             element={
               <ProtectedRoute>
                 <CoursesPage />
               </ProtectedRoute>
-            } 
+            }
+          />
+          <Route path="courses/:courseId" element={<CourseDetailPage />} />
+          <Route
+            path="learn/:courseId"
+            element={
+              <ProtectedRoute>
+                <CourseLearningPage />
+              </ProtectedRoute>
+            }
           />
           
           {/* Instructor Routes */}
@@ -115,6 +132,60 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* Instructor Routes */}
+          <Route
+            path="instructor-dashboard"
+            element={
+              <ProtectedRoute>
+                <InstructorDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="course-management"
+            element={
+              <ProtectedRoute>
+                <CourseManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="earnings-analytics"
+            element={
+              <ProtectedRoute>
+                <EarningsAnalytics />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="student-management"
+            element={
+              <ProtectedRoute>
+                <StudentManagement />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Admin Routes */}
+          <Route
+            path="admin-dashboard"
+            element={
+              <ProtectedRoute>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="user-management"
+            element={
+              <ProtectedRoute>
+                <UserManagement />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Common Routes */}
           <Route
             path="profile"
             element={

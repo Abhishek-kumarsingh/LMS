@@ -1,17 +1,19 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Home, 
-  BookOpen, 
-  Users, 
-  BarChart3, 
-  Settings, 
+import {
+  Home,
+  BookOpen,
+  Users,
+  BarChart3,
+  Settings,
   Plus,
   X,
   Heart,
   Award,
-  User
+  User,
+  DollarSign,
+  GraduationCap
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useAppStore } from '../../store/appStore';
@@ -41,18 +43,21 @@ const Sidebar: React.FC = () => {
         ];
       case 'INSTRUCTOR':
         return [
-          ...commonItems,
-          { icon: Plus, label: 'Create Course', path: '/instructor/create-course' },
-          { icon: BarChart3, label: 'Analytics', path: '/instructor/analytics' },
-          { icon: Settings, label: 'Settings', path: '/settings' },
+          { icon: Home, label: 'Dashboard', path: '/instructor-dashboard' },
+          { icon: BookOpen, label: 'Course Management', path: '/course-management' },
+          { icon: DollarSign, label: 'Earnings & Analytics', path: '/earnings-analytics' },
+          { icon: GraduationCap, label: 'Student Management', path: '/student-management' },
+          { icon: BookOpen, label: 'Browse Courses', path: '/courses' },
+          { icon: User, label: 'Profile', path: '/profile' },
         ];
       case 'ADMIN':
         return [
-          { icon: Home, label: 'Dashboard', path: '/admin/dashboard' },
-          { icon: Users, label: 'Users', path: '/admin/users' },
-          { icon: BookOpen, label: 'Courses', path: '/admin/courses' },
-          { icon: BarChart3, label: 'Analytics', path: '/admin/analytics' },
-          { icon: Settings, label: 'Settings', path: '/admin/settings' },
+          { icon: Home, label: 'Dashboard', path: '/admin-dashboard' },
+          { icon: Users, label: 'User Management', path: '/user-management' },
+          { icon: BookOpen, label: 'Course Oversight', path: '/course-oversight' },
+          { icon: BarChart3, label: 'System Analytics', path: '/system-analytics' },
+          { icon: Settings, label: 'System Settings', path: '/system-settings' },
+          { icon: User, label: 'Profile', path: '/profile' },
         ];
       default:
         return commonItems;
