@@ -17,6 +17,7 @@ import { useAuthStore } from '../../store/authStore';
 import { useAppStore } from '../../store/appStore';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
+import ThemeToggle from '../ui/ThemeToggle';
 
 const Header: React.FC = () => {
   const { user, logout } = useAuthStore();
@@ -81,18 +82,7 @@ const Header: React.FC = () => {
 
         {/* Right Section */}
         <div className="flex items-center space-x-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleDarkMode}
-            className="p-2"
-          >
-            {isDarkMode ? (
-              <Sun className="w-5 h-5" />
-            ) : (
-              <Moon className="w-5 h-5" />
-            )}
-          </Button>
+          <ThemeToggle variant="dropdown" size="md" />
 
           {user && (
             <>

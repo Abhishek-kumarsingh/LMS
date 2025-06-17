@@ -1,11 +1,21 @@
 import React, { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useAppStore } from '../../store/appStore';
+import { useThemeStore } from '../../store/themeStore';
+import { useToastStore } from '../../store/toastStore';
 import Header from './Header';
 import Sidebar from './Sidebar';
+import { ToastContainer } from '../ui/Toast';
 
 const Layout: React.FC = () => {
   const { isDarkMode } = useAppStore();
+  const { initializeTheme } = useThemeStore();
+  const { toasts, removeToast } = useToastStore();
+
+  useEffect(() => {
+    // Initialize theme system
+    initializeTheme();
+  }, [initializeTheme]);
 
   useEffect(() => {
     if (isDarkMode) {
@@ -16,7 +26,7 @@ const Layout: React.FC = () => {
   }, [isDarkMode]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
       <Header />
       <div className="flex">
         <Sidebar />
@@ -26,6 +36,13 @@ const Layout: React.FC = () => {
           </div>
         </main>
       </div>
+
+      {/* Toast Container */}
+      <ToastContainer
+        toasts={toasts}
+        onDismiss={removeToast}
+        position="top-right"
+      />
     </div>
   );
 };
