@@ -91,8 +91,8 @@ public class AdminService {
         analytics.put("monthlyRegistrations", monthlyRegistrations);
         
         // Active vs inactive users
-        analytics.put("activeUsers", userRepository.countByIsActiveTrue());
-        analytics.put("inactiveUsers", userRepository.countByIsActiveFalse());
+        analytics.put("activeUsers", userRepository.countByIsEnabledTrue());
+        analytics.put("inactiveUsers", userRepository.countByIsEnabledFalse());
         
         // Pending instructor approvals
         analytics.put("pendingInstructors", userRepository.countByRoleAndIsApprovedFalse(User.Role.INSTRUCTOR));
@@ -220,7 +220,7 @@ public class AdminService {
     public void broadcastSystemNotification(String title, String message) {
         validateAdminAccess();
         
-        List<User> allUsers = userRepository.findByIsActiveTrue();
+        List<User> allUsers = userRepository.findByIsEnabledTrue();
         
         for (User user : allUsers) {
             try {
@@ -355,8 +355,8 @@ public class AdminService {
 
     private Map<String, Long> getUserStatusDistribution() {
         Map<String, Long> distribution = new HashMap<>();
-        distribution.put("ACTIVE", userRepository.countByIsActiveTrue());
-        distribution.put("INACTIVE", userRepository.countByIsActiveFalse());
+        distribution.put("ACTIVE", userRepository.countByIsEnabledTrue());
+        distribution.put("INACTIVE", userRepository.countByIsEnabledFalse());
         return distribution;
     }
 
@@ -430,7 +430,7 @@ public class AdminService {
         metrics.put("averageQueryTime", "N/A");
 
         // Application performance
-        metrics.put("activeUsers", userRepository.countByIsActiveTrue());
+        metrics.put("activeUsers", userRepository.countByIsEnabledTrue());
         metrics.put("systemLoad", "N/A");
 
         return metrics;
@@ -447,7 +447,7 @@ public class AdminService {
 
         // User activity metrics
         activity.put("period", Map.of("start", startDate, "end", endDate));
-        activity.put("activeUsers", userRepository.countByIsActiveTrue());
+        activity.put("activeUsers", userRepository.countByIsEnabledTrue());
 
         return activity;
     }
@@ -546,7 +546,7 @@ public class AdminService {
 
         Map<String, Object> metrics = new HashMap<>();
         metrics.put("timestamp", LocalDateTime.now());
-        metrics.put("activeUsers", userRepository.countByIsActiveTrue());
+        metrics.put("activeUsers", userRepository.countByIsEnabledTrue());
         metrics.put("onlineUsers", "N/A"); // Would need session tracking
 
         return metrics;
@@ -635,7 +635,7 @@ public class AdminService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        user.setActive(true);
+        user.setEnabled(true);
         userRepository.save(user);
         log.info("User {} activated by admin", user.getEmail());
     }
@@ -646,7 +646,7 @@ public class AdminService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        user.setActive(false);
+        user.setEnabled(false);
         userRepository.save(user);
         log.info("User {} deactivated by admin", user.getEmail());
     }
@@ -836,7 +836,7 @@ public class AdminService {
         dto.setLastName(user.getLastName());
         dto.setEmail(user.getEmail());
         dto.setRole(user.getRole());
-        dto.setActive(user.isActive());
+        dto.setEnabled(user.isEnabled());
         dto.setEmailVerified(user.isEmailVerified());
         dto.setCreatedAt(user.getCreatedAt());
         return dto;

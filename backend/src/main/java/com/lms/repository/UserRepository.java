@@ -46,8 +46,8 @@ public interface UserRepository extends JpaRepository<User, String> {
                                    Pageable pageable);
 
     // Additional count methods for analytics
-    long countByIsActiveTrue();
-    long countByIsActiveFalse();
+    long countByIsEnabledTrue();
+    long countByIsEnabledFalse();
     long countByRoleAndIsApprovedFalse(User.Role role);
     long countByCreatedAtAfter(LocalDateTime date);
 
@@ -55,7 +55,7 @@ public interface UserRepository extends JpaRepository<User, String> {
     List<User> findByRoleAndIsApprovedFalse(User.Role role);
 
     // Find active users
-    List<User> findByIsActiveTrue();
+    List<User> findByIsEnabledTrue();
 
     // Find recent registrations
     List<User> findByCreatedAtAfterOrderByCreatedAtDesc(LocalDateTime date);

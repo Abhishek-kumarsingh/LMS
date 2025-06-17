@@ -3,12 +3,18 @@ package com.lms.controller;
 import com.lms.entity.Certificate;
 import com.lms.service.CertificateService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @RestController
 @RequestMapping("/api/certificates")
@@ -90,6 +96,29 @@ public class CertificateController {
     public ResponseEntity<Certificate> downloadCertificate(@PathVariable String certificateId) {
         Certificate certificate = certificateService.downloadCertificate(certificateId);
         return ResponseEntity.ok(certificate);
+    }
+
+    @GetMapping("/{certificateId}/download-file")
+    @PreAuthorize("hasRole('STUDENT') or hasRole('INSTRUCTOR') or hasRole('ADMIN')")
+    public ResponseEntity<Resource> downloadCertificateFile(@PathVariable String certificateId) {
+        Certificate certificate = certificateService.downloadCertificate(certificateId);
+
+        try {
+            Path filePath = Paths.get(certificate.getFilePath());
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (resource.exists() && resource.isReadable()) {
+                return ResponseEntity.ok()
+                        .header(HttpHeaders.CONTENT_DISPOSITION,
+                               "attachment; filename=\"certificate_" + certificate.getCertificateNumber() + ".pdf\"")
+                        .header(HttpHeaders.CONTENT_TYPE, "application/pdf")
+                        .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @GetMapping("/verify/{certificateNumber}")

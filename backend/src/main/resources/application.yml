@@ -85,6 +85,13 @@ file:
   upload-dir: ${FILE_UPLOAD_DIR:./uploads}
 
 # Certificate Configuration
+app:
+  certificate:
+    storage-path: ${CERTIFICATE_STORAGE_PATH:./certificates}
+    template: certificate-template
+    base-url: ${CERTIFICATE_BASE_URL:http://localhost:8080/api/certificates}
+
+# Legacy certificate config (for backward compatibility)
 certificate:
   template-path: classpath:templates/certificate-template.html
   output-dir: ${CERTIFICATE_OUTPUT_DIR:./certificates}

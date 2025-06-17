@@ -35,7 +35,8 @@ const Sidebar: React.FC = () => {
       case 'STUDENT':
         return [
           ...commonItems,
-          { icon: Award, label: 'Certificates', path: '/certificates' },
+          { icon: BookOpen, label: 'My Courses', path: '/my-courses' },
+          { icon: Award, label: 'My Certificates', path: '/my-certificates' },
           { icon: User, label: 'Profile', path: '/profile' },
         ];
       case 'INSTRUCTOR':

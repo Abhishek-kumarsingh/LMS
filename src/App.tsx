@@ -4,6 +4,9 @@ import { useAuthStore } from './store/authStore';
 import Layout from './components/layout/Layout';
 import LoginPage from './pages/auth/LoginPage';
 import StudentDashboard from './pages/dashboard/StudentDashboard';
+import MyCourses from './pages/dashboard/MyCourses';
+import MyCertificates from './pages/dashboard/MyCertificates';
+import ProfilePage from './pages/dashboard/ProfilePage';
 import CoursesPage from './pages/courses/CoursesPage';
 
 // Protected Route Component
@@ -95,9 +98,34 @@ function App() {
             } 
           />
 
+          {/* Student Routes */}
+          <Route
+            path="my-courses"
+            element={
+              <ProtectedRoute>
+                <MyCourses />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="my-certificates"
+            element={
+              <ProtectedRoute>
+                <MyCertificates />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+
           {/* Placeholder Routes */}
           <Route path="wishlist" element={<div className="p-8 text-center"><h1 className="text-2xl font-bold">Wishlist</h1><p className="text-gray-600 mt-2">Coming soon...</p></div>} />
-          <Route path="profile" element={<div className="p-8 text-center"><h1 className="text-2xl font-bold">Profile</h1><p className="text-gray-600 mt-2">Coming soon...</p></div>} />
           <Route path="settings" element={<div className="p-8 text-center"><h1 className="text-2xl font-bold">Settings</h1><p className="text-gray-600 mt-2">Coming soon...</p></div>} />
         </Route>
 
