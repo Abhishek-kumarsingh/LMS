@@ -23,6 +23,9 @@ public class HealthController {
     @Autowired
     private DataSource dataSource;
 
+    @Autowired
+    private DatabaseTestService databaseTestService;
+
     @GetMapping("/health")
     public ResponseEntity<Map<String, Object>> health() {
         Map<String, Object> health = new HashMap<>();
@@ -67,7 +70,13 @@ public class HealthController {
         liveness.put("status", "ALIVE");
         liveness.put("timestamp", LocalDateTime.now());
         liveness.put("uptime", System.currentTimeMillis());
-        
+
         return ResponseEntity.ok(liveness);
+    }
+
+    @GetMapping("/health/database")
+    public ResponseEntity<Map<String, Object>> databaseHealth() {
+        Map<String, Object> dbStatus = databaseTestService.getDatabaseStatus();
+        return ResponseEntity.ok(dbStatus);
     }
 }
