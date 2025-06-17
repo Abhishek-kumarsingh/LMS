@@ -57,11 +57,22 @@ public class User {
     
     @Column(name = "reset_password_expires")
     private LocalDateTime resetPasswordExpires;
-    
+
+    @Column(columnDefinition = "TEXT")
+    private String bio;
+
+    private String website;
+
+    private String linkedin;
+
+    private String twitter;
+
+    private String github;
+
     @CreationTimestamp
     @Column(name = "created_at")
     private LocalDateTime createdAt;
-    
+
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;

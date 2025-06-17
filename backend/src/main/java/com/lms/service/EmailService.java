@@ -98,4 +98,56 @@ public class EmailService {
             log.error("Failed to send instructor application notification for: {}", instructor.getEmail(), e);
         }
     }
+
+    public void sendInstructorApprovedEmail(User instructor) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(instructor.getEmail());
+            message.setSubject("Instructor Application Approved!");
+            message.setText(String.format(
+                "Hi %s,\n\n" +
+                "Congratulations! Your instructor application has been approved.\n\n" +
+                "You can now start creating and publishing courses on Modern LMS.\n\n" +
+                "Get started by visiting your instructor dashboard:\n" +
+                "%s/instructor/dashboard\n\n" +
+                "Welcome to the Modern LMS instructor community!\n\n" +
+                "Best regards,\n" +
+                "Modern LMS Team",
+                instructor.getFirstName(),
+                frontendUrl.split(",")[0]
+            ));
+
+            mailSender.send(message);
+            log.info("Instructor approval email sent to: {}", instructor.getEmail());
+        } catch (Exception e) {
+            log.error("Failed to send instructor approval email to: {}", instructor.getEmail(), e);
+        }
+    }
+
+    public void sendInstructorRejectedEmail(User instructor, String reason) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(instructor.getEmail());
+            message.setSubject("Instructor Application Update");
+            message.setText(String.format(
+                "Hi %s,\n\n" +
+                "Thank you for your interest in becoming an instructor on Modern LMS.\n\n" +
+                "After reviewing your application, we are unable to approve it at this time.\n\n" +
+                "%s\n\n" +
+                "You're welcome to reapply in the future. If you have any questions, " +
+                "please don't hesitate to contact our support team.\n\n" +
+                "Best regards,\n" +
+                "Modern LMS Team",
+                instructor.getFirstName(),
+                reason != null ? "Reason: " + reason : "Please ensure you meet all our instructor requirements."
+            ));
+
+            mailSender.send(message);
+            log.info("Instructor rejection email sent to: {}", instructor.getEmail());
+        } catch (Exception e) {
+            log.error("Failed to send instructor rejection email to: {}", instructor.getEmail(), e);
+        }
+    }
 }
