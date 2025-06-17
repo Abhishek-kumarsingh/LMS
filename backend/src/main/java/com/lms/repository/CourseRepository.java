@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -82,4 +83,13 @@ public interface CourseRepository extends JpaRepository<Course, String> {
                                 @Param("keyword") String keyword,
                                 @Param("sortBy") String sortBy,
                                 Pageable pageable);
+
+    // Additional count methods for analytics
+    long countByIsPublishedTrue();
+    long countByIsPublishedFalse();
+    long countByCreatedAtAfter(LocalDateTime date);
+
+    // Get monthly course creation statistics
+    @Query("SELECT YEAR(c.createdAt), MONTH(c.createdAt), COUNT(c) FROM Course c GROUP BY YEAR(c.createdAt), MONTH(c.createdAt) ORDER BY YEAR(c.createdAt) DESC, MONTH(c.createdAt) DESC")
+    List<Object[]> getMonthlyCourseCreation();
 }

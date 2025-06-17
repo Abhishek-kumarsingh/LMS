@@ -66,4 +66,17 @@ public interface InstructorEarningsRepository extends JpaRepository<InstructorEa
     
     // Find earnings pending payment
     List<InstructorEarnings> findByStatusOrderByEarnedAtAsc(InstructorEarnings.Status status);
+
+    // Additional methods for admin analytics
+    @Query("SELECT SUM(e.amount) FROM InstructorEarnings e")
+    BigDecimal getTotalRevenue();
+
+    @Query("SELECT SUM(e.amount) FROM InstructorEarnings e WHERE YEAR(e.earnedAt) = :year AND MONTH(e.earnedAt) = :month")
+    BigDecimal getMonthlyRevenue(@Param("year") int year, @Param("month") int month);
+
+    @Query("SELECT YEAR(e.earnedAt), MONTH(e.earnedAt), SUM(e.amount) FROM InstructorEarnings e GROUP BY YEAR(e.earnedAt), MONTH(e.earnedAt) ORDER BY YEAR(e.earnedAt) DESC, MONTH(e.earnedAt) DESC")
+    List<Object[]> getMonthlyRevenueTrends();
+
+    @Query("SELECT SUM(e.platformFee) FROM InstructorEarnings e")
+    BigDecimal getTotalPlatformRevenue();
 }

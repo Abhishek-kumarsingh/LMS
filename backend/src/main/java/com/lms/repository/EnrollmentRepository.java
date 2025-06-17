@@ -81,4 +81,17 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, String> 
            "GROUP BY YEAR(e.enrolledAt), MONTH(e.enrolledAt) " +
            "ORDER BY YEAR(e.enrolledAt) DESC, MONTH(e.enrolledAt) DESC")
     List<Object[]> getMonthlyEnrollmentStats(@Param("course") Course course);
+
+    // Additional methods for admin analytics
+    long countByIsActiveTrue();
+    long countByIsActiveFalse();
+    long countByEnrolledAtAfter(LocalDateTime date);
+
+    // Get monthly enrollment trends
+    @Query("SELECT YEAR(e.enrolledAt), MONTH(e.enrolledAt), COUNT(e) FROM Enrollment e GROUP BY YEAR(e.enrolledAt), MONTH(e.enrolledAt) ORDER BY YEAR(e.enrolledAt) DESC, MONTH(e.enrolledAt) DESC")
+    List<Object[]> getMonthlyEnrollmentTrends();
+
+    // Get average progress across all enrollments
+    @Query("SELECT AVG(e.progressPercentage) FROM Enrollment e WHERE e.isActive = true")
+    Double getAverageProgress();
 }

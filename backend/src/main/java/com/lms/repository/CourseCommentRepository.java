@@ -63,4 +63,7 @@ public interface CourseCommentRepository extends JpaRepository<CourseComment, St
     // Get comment statistics for course
     @Query("SELECT COUNT(c), COUNT(CASE WHEN c.parentComment IS NULL THEN 1 END), COUNT(CASE WHEN c.parentComment IS NOT NULL THEN 1 END) FROM CourseComment c WHERE c.course = :course AND c.isPublished = true")
     Object[] getCommentStats(@Param("course") Course course);
+
+    // Additional count methods for admin
+    long countByIsPublishedFalse();
 }

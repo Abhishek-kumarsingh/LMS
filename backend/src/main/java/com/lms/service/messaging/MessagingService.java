@@ -247,7 +247,19 @@ public class MessagingService {
                 enrollment.getCourse().getInstructor().getFullName(),
                 enrollment.getCompletedAt()
         );
-        
+
         messageProducerService.sendCertificateMessage(certificateMessage);
+    }
+
+    // System notification methods
+    public void sendSystemNotification(User user, String title, String message) {
+        NotificationMessage notificationMessage = new NotificationMessage(
+                user.getId(),
+                title,
+                message,
+                NotificationMessage.NotificationType.SYSTEM_ANNOUNCEMENT
+        );
+
+        messageProducerService.sendNotificationMessage(notificationMessage);
     }
 }

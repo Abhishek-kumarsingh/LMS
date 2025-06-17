@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,7 +41,26 @@ public interface UserRepository extends JpaRepository<User, String> {
            "LOWER(u.lastName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
            "LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
            "(:role IS NULL OR u.role = :role)")
-    Page<User> findUsersWithFilters(@Param("search") String search, 
-                                   @Param("role") User.Role role, 
+    Page<User> findUsersWithFilters(@Param("search") String search,
+                                   @Param("role") User.Role role,
                                    Pageable pageable);
+
+    // Additional count methods for analytics
+    long countByIsActiveTrue();
+    long countByIsActiveFalse();
+    long countByRoleAndIsApprovedFalse(User.Role role);
+    long countByCreatedAtAfter(LocalDateTime date);
+
+    // Find users by role and approval status
+    List<User> findByRoleAndIsApprovedFalse(User.Role role);
+
+    // Find active users
+    List<User> findByIsActiveTrue();
+
+    // Find recent registrations
+    List<User> findByCreatedAtAfterOrderByCreatedAtDesc(LocalDateTime date);
+
+    // Get monthly registration statistics
+    @Query("SELECT YEAR(u.createdAt), MONTH(u.createdAt), COUNT(u) FROM User u GROUP BY YEAR(u.createdAt), MONTH(u.createdAt) ORDER BY YEAR(u.createdAt) DESC, MONTH(u.createdAt) DESC")
+    List<Object[]> getMonthlyRegistrations();
 }

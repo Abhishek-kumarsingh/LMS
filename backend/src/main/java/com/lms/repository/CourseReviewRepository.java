@@ -66,4 +66,7 @@ public interface CourseReviewRepository extends JpaRepository<CourseReview, Stri
     
     // Find reviews pending moderation
     Page<CourseReview> findByIsPublishedFalseOrderByCreatedAtDesc(Pageable pageable);
+
+    // Additional count methods for admin
+    long countByIsPublishedFalse();
 }
