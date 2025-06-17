@@ -105,7 +105,16 @@ public class Course {
     
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Wishlist> wishlists = new ArrayList<>();
-    
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<CourseComment> comments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Certificate> certificates = new ArrayList<>();
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<InstructorEarnings> earnings = new ArrayList<>();
+
     public enum Level {
         BEGINNER, INTERMEDIATE, ADVANCED
     }

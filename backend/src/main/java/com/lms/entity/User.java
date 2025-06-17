@@ -89,7 +89,16 @@ public class User {
     
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Wishlist> wishlists = new ArrayList<>();
-    
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<CourseComment> comments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Certificate> certificates = new ArrayList<>();
+
+    @OneToMany(mappedBy = "instructor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<InstructorEarnings> earnings = new ArrayList<>();
+
     public enum Role {
         STUDENT, INSTRUCTOR, ADMIN
     }

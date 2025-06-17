@@ -1,5 +1,6 @@
 package com.lms.service;
 
+import com.lms.entity.Course;
 import com.lms.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -148,6 +149,92 @@ public class EmailService {
             log.info("Instructor rejection email sent to: {}", instructor.getEmail());
         } catch (Exception e) {
             log.error("Failed to send instructor rejection email to: {}", instructor.getEmail(), e);
+        }
+    }
+
+    public void sendEnrollmentConfirmation(User user, Course course) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(user.getEmail());
+            message.setSubject("Course Enrollment Confirmation");
+            message.setText(String.format(
+                "Hi %s,\n\n" +
+                "You have successfully enrolled in the course: %s\n\n" +
+                "Instructor: %s\n" +
+                "Course Duration: %s hours\n\n" +
+                "You can start learning by visiting:\n" +
+                "%s/courses/%s\n\n" +
+                "Happy learning!\n\n" +
+                "Best regards,\n" +
+                "Modern LMS Team",
+                user.getFirstName(),
+                course.getTitle(),
+                course.getInstructor().getFullName(),
+                course.getDurationMinutes() / 60,
+                frontendUrl.split(",")[0],
+                course.getId()
+            ));
+
+            mailSender.send(message);
+            log.info("Enrollment confirmation email sent to: {}", user.getEmail());
+        } catch (Exception e) {
+            log.error("Failed to send enrollment confirmation email to: {}", user.getEmail(), e);
+        }
+    }
+
+    public void sendCoursePublishedNotification(Course course) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(course.getInstructor().getEmail());
+            message.setSubject("Course Published Successfully");
+            message.setText(String.format(
+                "Hi %s,\n\n" +
+                "Great news! Your course '%s' has been published and is now available to students.\n\n" +
+                "Course URL: %s/courses/%s\n\n" +
+                "Students can now discover and enroll in your course. We'll notify you when you get your first enrollments!\n\n" +
+                "Best regards,\n" +
+                "Modern LMS Team",
+                course.getInstructor().getFirstName(),
+                course.getTitle(),
+                frontendUrl.split(",")[0],
+                course.getId()
+            ));
+
+            mailSender.send(message);
+            log.info("Course published notification sent to: {}", course.getInstructor().getEmail());
+        } catch (Exception e) {
+            log.error("Failed to send course published notification to: {}", course.getInstructor().getEmail(), e);
+        }
+    }
+
+    public void sendCertificateGeneratedNotification(User user, Course course, String certificateNumber) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(user.getEmail());
+            message.setSubject("Certificate Ready for Download");
+            message.setText(String.format(
+                "Hi %s,\n\n" +
+                "Congratulations! You have successfully completed the course: %s\n\n" +
+                "Your certificate is now ready for download.\n" +
+                "Certificate Number: %s\n\n" +
+                "Download your certificate from your dashboard:\n" +
+                "%s/dashboard/certificates\n\n" +
+                "Well done on completing the course!\n\n" +
+                "Best regards,\n" +
+                "Modern LMS Team",
+                user.getFirstName(),
+                course.getTitle(),
+                certificateNumber,
+                frontendUrl.split(",")[0]
+            ));
+
+            mailSender.send(message);
+            log.info("Certificate notification email sent to: {}", user.getEmail());
+        } catch (Exception e) {
+            log.error("Failed to send certificate notification email to: {}", user.getEmail(), e);
         }
     }
 }
