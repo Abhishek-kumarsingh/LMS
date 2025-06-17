@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: lms-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: modern_lms
+      MYSQL_USER: lms_user
+      MYSQL_PASSWORD: lms_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - lms-network
+
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: lms-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: lms_user
+      RABBITMQ_DEFAULT_PASS: lms_password
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - lms-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: lms-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - lms-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lms-backend
+    environment:
+      DB_USERNAME: lms_user
+      DB_PASSWORD: lms_password
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USERNAME: lms_user
+      RABBITMQ_PASSWORD: lms_password
+      JWT_SECRET: mySecretKey123456789012345678901234567890
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+      - rabbitmq
+      - redis
+    volumes:
+      - ./uploads:/app/uploads
+      - ./certificates:/app/certificates
+      - ./logs:/app/logs
+    networks:
+      - lms-network
+
+volumes:
+  mysql_data:
+  rabbitmq_data:
+  redis_data:
+
+networks:
+  lms-network:
+    driver: bridge
