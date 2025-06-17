@@ -8,6 +8,7 @@ import com.lms.exception.ResourceNotFoundException;
 import com.lms.repository.CategoryRepository;
 import com.lms.repository.CourseRepository;
 import com.lms.repository.UserRepository;
+import com.lms.service.messaging.MessagingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -32,7 +33,7 @@ public class CourseService {
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
     private final CloudinaryService cloudinaryService;
-    private final EmailService emailService;
+    private final MessagingService messagingService;
 
     public Course createCourse(Course course) {
         User currentUser = getCurrentUser();
@@ -209,9 +210,14 @@ public class CourseService {
         Course savedCourse = courseRepository.save(course);
         
         log.info("Course published: {}", savedCourse.getTitle());
-        
-        // Send notification email to followers (implement later with RabbitMQ)
-        
+
+        // Send course published notification
+        try {
+            messagingService.sendCoursePublishedEmail(savedCourse);
+        } catch (Exception e) {
+            log.error("Failed to send course published notification", e);
+        }
+
         return savedCourse;
     }
 

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Certificate of Completion</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 0;
+        }
+        
+        body {
+            font-family: 'Georgia', serif;
+            margin: 0;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+        
+        .certificate-container {
+            background: white;
+            border: 8px solid #2c3e50;
+            border-radius: 20px;
+            padding: 60px;
+            height: calc(100% - 120px);
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .certificate-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .certificate-title {
+            font-size: 48px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+        
+        .certificate-subtitle {
+            font-size: 24px;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        
+        .certificate-body {
+            text-align: center;
+            margin: 60px 0;
+        }
+        
+        .awarded-text {
+            font-size: 20px;
+            color: #34495e;
+            margin-bottom: 30px;
+        }
+        
+        .student-name {
+            font-size: 42px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 30px 0;
+            text-decoration: underline;
+            text-decoration-color: #3498db;
+            text-underline-offset: 10px;
+        }
+        
+        .course-info {
+            font-size: 18px;
+            color: #34495e;
+            margin: 40px 0;
+            line-height: 1.6;
+        }
+        
+        .course-name {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 20px 0;
+        }
+        
+        .completion-info {
+            font-size: 16px;
+            color: #7f8c8d;
+            margin: 30px 0;
+        }
+        
+        .certificate-footer {
+            position: absolute;
+            bottom: 40px;
+            left: 60px;
+            right: 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        
+        .signature-section {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .signature-line {
+            border-bottom: 2px solid #2c3e50;
+            width: 200px;
+            margin: 0 auto 10px;
+        }
+        
+        .signature-label {
+            font-size: 14px;
+            color: #7f8c8d;
+            font-weight: bold;
+        }
+        
+        .instructor-name {
+            font-size: 16px;
+            color: #2c3e50;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .certificate-number {
+            text-align: right;
+            font-size: 12px;
+            color: #95a5a6;
+        }
+        
+        .decorative-border {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            bottom: 20px;
+            border: 2px solid #ecf0f1;
+            border-radius: 15px;
+            pointer-events: none;
+        }
+        
+        .seal {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            width: 80px;
+            height: 80px;
+            border: 3px solid #3498db;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ecf0f1;
+            font-size: 12px;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+            line-height: 1.2;
+        }
+        
+        .date-info {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .date-label {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+        }
+        
+        .date-value {
+            font-size: 16px;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="certificate-container">
+        <div class="decorative-border"></div>
+        
+        <div class="seal">
+            MODERN<br/>LMS
+        </div>
+        
+        <div class="certificate-header">
+            <div class="certificate-title">Certificate</div>
+            <div class="certificate-subtitle">of Completion</div>
+        </div>
+        
+        <div class="certificate-body">
+            <div class="awarded-text">This is to certify that</div>
+            
+            <div class="student-name" th:text="${studentName}">Student Name</div>
+            
+            <div class="course-info">
+                has successfully completed the online course
+            </div>
+            
+            <div class="course-name" th:text="${courseName}">Course Name</div>
+            
+            <div class="completion-info">
+                <div>Completed on <span th:text="${completionDate}">Date</span></div>
+                <div th:if="${courseDuration}">Course Duration: <span th:text="${courseDuration}">Duration</span></div>
+            </div>
+        </div>
+        
+        <div class="certificate-footer">
+            <div class="signature-section">
+                <div class="signature-line"></div>
+                <div class="signature-label">INSTRUCTOR</div>
+                <div class="instructor-name" th:text="${instructorName}">Instructor Name</div>
+            </div>
+            
+            <div class="date-info">
+                <div class="date-label">Issue Date</div>
+                <div class="date-value" th:text="${issueDate}">Issue Date</div>
+            </div>
+            
+            <div class="certificate-number">
+                Certificate No: <span th:text="${certificateNumber}">Certificate Number</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

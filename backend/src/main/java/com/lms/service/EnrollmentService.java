@@ -9,6 +9,7 @@ import com.lms.exception.ResourceNotFoundException;
 import com.lms.repository.CourseRepository;
 import com.lms.repository.EnrollmentRepository;
 import com.lms.repository.UserRepository;
+import com.lms.service.messaging.MessagingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -31,7 +32,7 @@ public class EnrollmentService {
     private final EnrollmentRepository enrollmentRepository;
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
-    private final EmailService emailService;
+    private final MessagingService messagingService;
 
     public Enrollment enrollInCourse(String courseId) {
         User currentUser = getCurrentUser();
@@ -69,11 +70,11 @@ public class EnrollmentService {
 
         log.info("User {} enrolled in course {}", currentUser.getEmail(), course.getTitle());
 
-        // Send enrollment confirmation email
+        // Send enrollment confirmation email and notification
         try {
-            emailService.sendEnrollmentConfirmation(currentUser, course);
+            messagingService.sendEnrollmentConfirmation(currentUser, course);
         } catch (Exception e) {
-            log.error("Failed to send enrollment confirmation email", e);
+            log.error("Failed to send enrollment confirmation", e);
         }
 
         return savedEnrollment;
@@ -113,8 +114,16 @@ public class EnrollmentService {
         // Mark as completed if progress is 100%
         if (progressPercentage.compareTo(new BigDecimal("100")) >= 0) {
             enrollment.markAsCompleted();
-            log.info("Course completed by user {} for course {}", 
+            log.info("Course completed by user {} for course {}",
                     currentUser.getEmail(), enrollment.getCourse().getTitle());
+
+            // Send course completion notification and trigger certificate generation
+            try {
+                messagingService.sendCourseCompletionNotification(currentUser, enrollment.getCourse());
+                messagingService.requestCertificateGeneration(enrollment);
+            } catch (Exception e) {
+                log.error("Failed to send course completion notifications", e);
+            }
         }
 
         return enrollmentRepository.save(enrollment);
