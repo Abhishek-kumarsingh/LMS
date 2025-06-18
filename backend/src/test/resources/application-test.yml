@@ -4,12 +4,19 @@ server:
 spring:
   application:
     name: modern-lms-backend-test
-  
+
   datasource:
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    username: sa
-    password: 
-    driver-class-name: org.h2.Driver
+    # Use MySQL for CI/CD pipeline (matches GitHub Actions services)
+    url: jdbc:mysql://localhost:3306/test_lms?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
+    username: ${DB_USERNAME:test_user}
+    password: ${DB_PASSWORD:test_password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+    # Fallback to H2 for local testing when MySQL is not available
+    hikari:
+      connection-test-query: SELECT 1
+      connection-timeout: 20000
+      maximum-pool-size: 5
   
   jpa:
     hibernate:
@@ -17,11 +24,13 @@ spring:
     show-sql: true
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
+        dialect: ${HIBERNATE_DIALECT:org.hibernate.dialect.MySQLDialect}
         format_sql: true
+        hbm2ddl:
+          import_files_sql_extractor: org.hibernate.tool.hbm2ddl.MultipleLinesSqlCommandExtractor
   
   flyway:
-    enabled: false
+    enabled: false  # Disabled for tests - using JPA create-drop
   
   mail:
     host: localhost
@@ -36,10 +45,10 @@ spring:
             enable: false
   
   rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:test_user}
+    password: ${RABBITMQ_PASSWORD:test_password}
   
   servlet:
     multipart:

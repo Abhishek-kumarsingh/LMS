@@ -4,6 +4,9 @@ import com.lms.entity.User;
 import com.lms.repository.UserRepository;
 import com.lms.service.DatabaseTestService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -21,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
+@TestMethodOrder(OrderAnnotation.class)
 public class DatabaseConnectionTest {
 
     @Autowired
@@ -33,11 +37,17 @@ public class DatabaseConnectionTest {
     private DatabaseTestService databaseTestService;
 
     @Test
+    @Order(1)
     public void testDatabaseConnection() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
-            assertNotNull(connection);
-            assertTrue(connection.isValid(5));
-            assertFalse(connection.isClosed());
+            assertNotNull(connection, "Database connection should not be null");
+            assertTrue(connection.isValid(5), "Database connection should be valid");
+            assertFalse(connection.isClosed(), "Database connection should not be closed");
+
+            // Log connection details for debugging
+            System.out.println("✅ Database connection test passed");
+            System.out.println("   URL: " + connection.getMetaData().getURL());
+            System.out.println("   Driver: " + connection.getMetaData().getDriverName());
         }
     }
 
