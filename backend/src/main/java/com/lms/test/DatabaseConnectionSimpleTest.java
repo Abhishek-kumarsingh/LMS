@@ -2,7 +2,7 @@ package com.lms.test;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.ConfigurableApplicationContext;
+
 
 @SpringBootApplication(scanBasePackages = "com.lms")
 public class DatabaseConnectionSimpleTest {
@@ -17,7 +17,7 @@ public class DatabaseConnectionSimpleTest {
         System.setProperty("spring.profiles.active", "local");
         
         try {
-            ConfigurableApplicationContext context = SpringApplication.run(DatabaseConnectionSimpleTest.class, args);
+            SpringApplication.run(DatabaseConnectionSimpleTest.class, args);
             
             System.out.println("✅ Application started successfully!");
             System.out.println();

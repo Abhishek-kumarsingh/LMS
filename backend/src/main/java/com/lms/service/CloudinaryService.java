@@ -20,6 +20,7 @@ public class CloudinaryService {
 
     public String uploadImage(MultipartFile file, String folder) throws IOException {
         try {
+            @SuppressWarnings("unchecked")
             Map<String, Object> uploadParams = ObjectUtils.asMap(
                     "folder", folder,
                     "public_id", UUID.randomUUID().toString(),
@@ -33,6 +34,7 @@ public class CloudinaryService {
                     )
             );
 
+            @SuppressWarnings("unchecked")
             Map<String, Object> uploadResult = cloudinary.uploader().upload(file.getBytes(), uploadParams);
             String imageUrl = (String) uploadResult.get("secure_url");
             
@@ -47,6 +49,7 @@ public class CloudinaryService {
 
     public String uploadVideo(MultipartFile file, String folder) throws IOException {
         try {
+            @SuppressWarnings("unchecked")
             Map<String, Object> uploadParams = ObjectUtils.asMap(
                     "folder", folder,
                     "public_id", UUID.randomUUID().toString(),
@@ -55,6 +58,7 @@ public class CloudinaryService {
                     "format", "mp4"
             );
 
+            @SuppressWarnings("unchecked")
             Map<String, Object> uploadResult = cloudinary.uploader().upload(file.getBytes(), uploadParams);
             String videoUrl = (String) uploadResult.get("secure_url");
             
@@ -69,6 +73,7 @@ public class CloudinaryService {
 
     public void deleteFile(String publicId) {
         try {
+            @SuppressWarnings("unchecked")
             Map<String, Object> result = cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
             log.info("File deleted from Cloudinary: {}", result);
         } catch (IOException e) {

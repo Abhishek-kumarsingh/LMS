@@ -57,7 +57,10 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, String> 
     
     // Count completed enrollments by user
     long countByUserAndCompletedAtIsNotNull(User user);
-    
+
+    // Count all completed enrollments
+    long countByCompletedAtIsNotNull();
+
     // Find recent enrollments
     Page<Enrollment> findByEnrolledAtAfterOrderByEnrolledAtDesc(LocalDateTime since, Pageable pageable);
     

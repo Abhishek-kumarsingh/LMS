@@ -115,7 +115,7 @@ public class DatabaseConnectionTest {
 
     @Test
     public void testTransactionRollback() {
-        long initialCount = userRepository.count();
+        // Test transaction rollback behavior
 
         try {
             // This should rollback due to @Transactional on the test class

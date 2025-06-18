@@ -56,7 +56,16 @@ public class Enrollment {
     public boolean isCompleted() {
         return completedAt != null;
     }
-    
+
+    public void setCompleted(boolean completed) {
+        if (completed) {
+            markAsCompleted();
+        } else {
+            this.completedAt = null;
+            // Don't reset progress percentage when uncompleting
+        }
+    }
+
     public void markAsCompleted() {
         this.completedAt = LocalDateTime.now();
         this.progressPercentage = new BigDecimal("100.00");

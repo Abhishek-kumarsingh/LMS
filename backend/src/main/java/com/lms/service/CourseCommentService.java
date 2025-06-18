@@ -2,7 +2,7 @@ package com.lms.service;
 
 import com.lms.entity.Course;
 import com.lms.entity.CourseComment;
-import com.lms.entity.Lesson;
+
 import com.lms.entity.User;
 import com.lms.exception.BadRequestException;
 import com.lms.exception.ResourceNotFoundException;

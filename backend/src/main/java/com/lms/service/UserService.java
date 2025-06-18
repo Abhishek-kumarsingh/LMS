@@ -1,6 +1,7 @@
 package com.lms.service;
 
 import com.lms.dto.admin.InstructorApprovalRequest;
+import com.lms.dto.auth.RegisterRequest;
 import com.lms.dto.user.ChangePasswordRequest;
 import com.lms.dto.user.UpdateProfileRequest;
 import com.lms.dto.user.UserDto;
@@ -24,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -115,6 +117,84 @@ public class UserService {
         userRepository.save(user);
         
         log.info("Password changed for user: {}", user.getEmail());
+    }
+
+    // Public methods for finding users
+    public UserDto getUserById(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+        return userMapper.toDto(user);
+    }
+
+    public UserDto findById(String userId) {
+        return getUserById(userId); // Delegate to getUserById for consistency
+    }
+
+    public UserDto findByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+        return userMapper.toDto(user);
+    }
+
+    @Transactional
+    public UserDto register(RegisterRequest registerRequest) {
+        if (userRepository.existsByEmail(registerRequest.getEmail())) {
+            throw new BadRequestException("User already exists with email: " + registerRequest.getEmail());
+        }
+
+        // Create new user
+        User user = new User();
+        user.setId(UUID.randomUUID().toString());
+        user.setFirstName(registerRequest.getFirstName());
+        user.setLastName(registerRequest.getLastName());
+        user.setEmail(registerRequest.getEmail());
+        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+        user.setRole(registerRequest.getRole());
+
+        // Students are auto-approved, instructors need approval
+        if (registerRequest.getRole() == User.Role.STUDENT) {
+            user.setApproved(true);
+        }
+
+        // Generate verification token
+        user.setVerificationToken(UUID.randomUUID().toString());
+
+        User savedUser = userRepository.save(user);
+
+        // Send welcome email
+        emailService.sendWelcomeEmail(savedUser);
+
+        // If instructor, notify admin
+        if (registerRequest.getRole() == User.Role.INSTRUCTOR) {
+            emailService.sendInstructorApplicationNotification(savedUser);
+        }
+
+        return userMapper.toDto(savedUser);
+    }
+
+    @Transactional
+    public UserDto updateUser(String userId, UserDto userDto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+        // Update allowed fields
+        if (userDto.getFirstName() != null) {
+            user.setFirstName(userDto.getFirstName());
+        }
+        if (userDto.getLastName() != null) {
+            user.setLastName(userDto.getLastName());
+        }
+        if (userDto.getEmail() != null && !userDto.getEmail().equals(user.getEmail())) {
+            // Check if email is already taken
+            if (userRepository.existsByEmail(userDto.getEmail())) {
+                throw new BadRequestException("Email already exists: " + userDto.getEmail());
+            }
+            user.setEmail(userDto.getEmail());
+            user.setEmailVerified(false); // Reset email verification
+        }
+
+        User savedUser = userRepository.save(user);
+        return userMapper.toDto(savedUser);
     }
 
     // Admin methods

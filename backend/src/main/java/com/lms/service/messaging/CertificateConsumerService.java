@@ -5,13 +5,9 @@ import com.lms.dto.messaging.CertificateMessage;
 import com.lms.dto.messaging.EmailMessage;
 import com.lms.dto.messaging.NotificationMessage;
 import com.lms.entity.Certificate;
-import com.lms.entity.Course;
 import com.lms.entity.Enrollment;
-import com.lms.entity.User;
 import com.lms.repository.CertificateRepository;
-import com.lms.repository.CourseRepository;
 import com.lms.repository.EnrollmentRepository;
-import com.lms.repository.UserRepository;
 import com.lms.service.PdfCertificateGeneratorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,8 +28,6 @@ public class CertificateConsumerService {
 
     private final CertificateRepository certificateRepository;
     private final EnrollmentRepository enrollmentRepository;
-    private final CourseRepository courseRepository;
-    private final UserRepository userRepository;
     private final PdfCertificateGeneratorService pdfGeneratorService;
     private final MessageProducerService messageProducerService;
 

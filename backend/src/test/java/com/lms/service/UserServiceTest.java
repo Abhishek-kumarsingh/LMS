@@ -1,6 +1,7 @@
 package com.lms.service;
 
 import com.lms.config.TestConfig;
+import com.lms.dto.admin.InstructorApprovalRequest;
 import com.lms.dto.auth.RegisterRequest;
 import com.lms.dto.user.UserDto;
 import com.lms.entity.User;
@@ -60,14 +61,14 @@ class UserServiceTest {
         testUserDto.setEmail(testUser.getEmail());
         testUserDto.setFirstName(testUser.getFirstName());
         testUserDto.setLastName(testUser.getLastName());
-        testUserDto.setRole(testUser.getRole().name());
+        testUserDto.setRole(testUser.getRole());
 
         registerRequest = new RegisterRequest();
         registerRequest.setEmail("new.user@example.com");
         registerRequest.setPassword("password123");
         registerRequest.setFirstName("New");
         registerRequest.setLastName("User");
-        registerRequest.setRole("STUDENT");
+        registerRequest.setRole(User.Role.STUDENT);
     }
 
     @Test
@@ -132,9 +133,9 @@ class UserServiceTest {
         
         when(userRepository.existsByEmail(registerRequest.getEmail())).thenReturn(false);
         when(passwordEncoder.encode(registerRequest.getPassword())).thenReturn("encoded-password");
-        when(userMapper.toEntity(any(RegisterRequest.class))).thenReturn(newUser);
         when(userRepository.save(any(User.class))).thenReturn(newUser);
         when(userMapper.toDto(newUser)).thenReturn(testUserDto);
+        doNothing().when(emailService).sendWelcomeEmail(any(User.class));
 
         // When
         UserDto result = userService.register(registerRequest);
@@ -170,17 +171,17 @@ class UserServiceTest {
         List<User> users = Arrays.asList(testUser, TestConfig.createTestInstructor());
         Page<User> userPage = new PageImpl<>(users, pageable, users.size());
         
-        when(userRepository.findAll(pageable)).thenReturn(userPage);
+        when(userRepository.findUsersWithFilters(null, null, pageable)).thenReturn(userPage);
         when(userMapper.toDto(any(User.class))).thenReturn(testUserDto);
 
         // When
-        Page<UserDto> result = userService.getAllUsers(pageable);
+        Page<UserDto> result = userService.getAllUsers(null, null, pageable);
 
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(2);
         assertThat(result.getTotalElements()).isEqualTo(2);
-        verify(userRepository).findAll(pageable);
+        verify(userRepository).findUsersWithFilters(null, null, pageable);
         verify(userMapper, times(2)).toDto(any(User.class));
     }
 
@@ -226,16 +227,24 @@ class UserServiceTest {
         // Given
         User instructor = TestConfig.createTestInstructor();
         instructor.setApproved(false);
-        
+
+        InstructorApprovalRequest request = new InstructorApprovalRequest();
+        request.setUserId(instructor.getId());
+        request.setApproved(true);
+
         when(userRepository.findById(instructor.getId())).thenReturn(Optional.of(instructor));
         when(userRepository.save(any(User.class))).thenReturn(instructor);
+        when(userMapper.toDto(any(User.class))).thenReturn(testUserDto);
+        doNothing().when(emailService).sendInstructorApprovedEmail(any(User.class));
 
         // When
-        userService.approveInstructor(instructor.getId());
+        UserDto result = userService.approveInstructor(request);
 
         // Then
+        assertThat(result).isNotNull();
         verify(userRepository).findById(instructor.getId());
         verify(userRepository).save(argThat(user -> user.isApproved()));
-        verify(emailService).sendInstructorApprovalEmail(any(User.class));
+        verify(emailService).sendInstructorApprovedEmail(any(User.class));
+        verify(userMapper).toDto(any(User.class));
     }
 }

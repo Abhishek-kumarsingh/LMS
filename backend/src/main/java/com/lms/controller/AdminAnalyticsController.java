@@ -1,7 +1,4 @@
 package com.lms.controller;
-
-import com.lms.dto.admin.DashboardAnalyticsDto;
-import com.lms.dto.admin.SystemHealthDto;
 import com.lms.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;

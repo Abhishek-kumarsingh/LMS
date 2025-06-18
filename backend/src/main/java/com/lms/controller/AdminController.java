@@ -12,7 +12,7 @@ import com.lms.entity.Notification;
 import com.lms.service.UserService;
 import com.lms.service.AdminService;
 import com.lms.service.CourseService;
-import com.lms.service.EnrollmentService;
+
 import com.lms.service.CourseReviewService;
 import com.lms.service.CourseCommentService;
 import com.lms.service.CertificateService;
@@ -40,7 +40,6 @@ public class AdminController {
     private final UserService userService;
     private final AdminService adminService;
     private final CourseService courseService;
-    private final EnrollmentService enrollmentService;
     private final CourseReviewService reviewService;
     private final CourseCommentService commentService;
     private final CertificateService certificateService;

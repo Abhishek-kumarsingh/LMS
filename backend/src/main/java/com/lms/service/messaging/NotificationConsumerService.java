@@ -4,7 +4,7 @@ import com.lms.config.RabbitMQConfig;
 import com.lms.dto.messaging.NotificationMessage;
 import com.lms.entity.Notification;
 import com.lms.repository.NotificationRepository;
-import com.lms.repository.UserRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -18,7 +18,6 @@ import java.util.UUID;
 public class NotificationConsumerService {
 
     private final NotificationRepository notificationRepository;
-    private final UserRepository userRepository;
 
     @RabbitListener(queues = RabbitMQConfig.NOTIFICATION_QUEUE)
     public void processNotificationMessage(NotificationMessage notificationMessage) {

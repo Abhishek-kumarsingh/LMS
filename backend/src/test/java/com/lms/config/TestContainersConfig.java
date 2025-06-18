@@ -14,6 +14,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 public class TestContainersConfig {
 
     @Container
+    @SuppressWarnings("resource") // TestContainers manages lifecycle automatically
     static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0")
             .withDatabaseName("test_lms")
             .withUsername("test_user")
@@ -21,8 +22,10 @@ public class TestContainersConfig {
             .withReuse(true);
 
     @Container
+    @SuppressWarnings("resource") // TestContainers manages lifecycle automatically
     static RabbitMQContainer rabbitmq = new RabbitMQContainer("rabbitmq:3.12-management")
-            .withUser("test_user", "test_password")
+            .withEnv("RABBITMQ_DEFAULT_USER", "test_user")
+            .withEnv("RABBITMQ_DEFAULT_PASS", "test_password")
             .withReuse(true);
 
     @DynamicPropertySource
