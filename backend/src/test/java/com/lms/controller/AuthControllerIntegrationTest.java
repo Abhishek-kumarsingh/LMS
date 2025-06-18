@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -65,7 +66,7 @@ class AuthControllerIntegrationTest {
         registerRequest.setPassword("password123");
         registerRequest.setFirstName("Test");
         registerRequest.setLastName("User");
-        registerRequest.setRole("STUDENT");
+        registerRequest.setRole(User.Role.STUDENT);
 
         // When & Then
         mockMvc.perform(post("/api/auth/register")
@@ -92,7 +93,7 @@ class AuthControllerIntegrationTest {
         registerRequest.setPassword("password123");
         registerRequest.setFirstName("Test");
         registerRequest.setLastName("User");
-        registerRequest.setRole("STUDENT");
+        registerRequest.setRole(User.Role.STUDENT);
 
         // When & Then
         mockMvc.perform(post("/api/auth/register")
@@ -100,7 +101,7 @@ class AuthControllerIntegrationTest {
                 .content(objectMapper.writeValueAsString(registerRequest)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").containsString("User already exists"));
+                .andExpect(jsonPath("$.message").value(containsString("User already exists")));
     }
 
     @Test
@@ -145,7 +146,7 @@ class AuthControllerIntegrationTest {
                 .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").containsString("Invalid credentials"));
+                .andExpect(jsonPath("$.message").value(containsString("Invalid credentials")));
     }
 
     @Test
@@ -162,7 +163,7 @@ class AuthControllerIntegrationTest {
                 .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").containsString("Invalid credentials"));
+                .andExpect(jsonPath("$.message").value(containsString("Invalid credentials")));
     }
 
     @Test
@@ -202,7 +203,7 @@ class AuthControllerIntegrationTest {
         registerRequest.setPassword("password123");
         registerRequest.setFirstName("Test");
         registerRequest.setLastName("Instructor");
-        registerRequest.setRole("INSTRUCTOR");
+        registerRequest.setRole(User.Role.INSTRUCTOR);
 
         // When & Then
         mockMvc.perform(post("/api/auth/register")

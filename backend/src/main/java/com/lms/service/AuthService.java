@@ -7,6 +7,7 @@ import com.lms.dto.user.UserDto;
 import com.lms.entity.User;
 import com.lms.exception.BadRequestException;
 import com.lms.exception.ResourceNotFoundException;
+import com.lms.exception.UserAlreadyExistsException;
 import com.lms.mapper.UserMapper;
 import com.lms.repository.UserRepository;
 import com.lms.security.JwtUtils;
@@ -57,7 +58,7 @@ public class AuthService {
     @Transactional
     public AuthResponse register(RegisterRequest registerRequest) {
         if (userRepository.existsByEmail(registerRequest.getEmail())) {
-            throw new BadRequestException("Email is already taken!");
+            throw new UserAlreadyExistsException("User already exists with email: " + registerRequest.getEmail());
         }
 
         // Create new user
