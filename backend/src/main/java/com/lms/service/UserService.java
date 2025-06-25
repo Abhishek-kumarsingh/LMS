@@ -9,6 +9,7 @@ import com.lms.dto.user.UserProfileDto;
 import com.lms.entity.User;
 import com.lms.exception.BadRequestException;
 import com.lms.exception.ResourceNotFoundException;
+import com.lms.exception.UserAlreadyExistsException;
 import com.lms.mapper.UserMapper;
 import com.lms.repository.UserRepository;
 import com.lms.security.UserPrincipal;
@@ -139,7 +140,7 @@ public class UserService {
     @Transactional
     public UserDto register(RegisterRequest registerRequest) {
         if (userRepository.existsByEmail(registerRequest.getEmail())) {
-            throw new BadRequestException("User already exists with email: " + registerRequest.getEmail());
+            throw new UserAlreadyExistsException("User already exists with email: " + registerRequest.getEmail());
         }
 
         // Create new user
