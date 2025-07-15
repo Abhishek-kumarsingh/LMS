@@ -11,6 +11,10 @@ import com.lms.repository.UserRepository;
 import com.lms.service.messaging.MessagingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -60,6 +64,10 @@ public class CourseService {
         return savedCourse;
     }
 
+    @Caching(evict = {
+        @CacheEvict(value = "courses", key = "#courseId"),
+        @CacheEvict(value = "courses", allEntries = true)
+    })
     public Course updateCourse(String courseId, Course courseUpdate) {
         Course existingCourse = getCourseById(courseId);
         User currentUser = getCurrentUser();
@@ -148,12 +156,14 @@ public class CourseService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "courses", key = "#courseId")
     public Course getCourseById(String courseId) {
         return courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "courses", key = "'published:' + #pageable.pageNumber + ':' + #pageable.pageSize")
     public Page<Course> getAllPublishedCourses(Pageable pageable) {
         return courseRepository.findByIsPublishedTrueOrderByCreatedAtDesc(pageable);
     }
@@ -166,11 +176,13 @@ public class CourseService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "courses", key = "'category:' + #categoryId + ':' + #pageable.pageNumber + ':' + #pageable.pageSize")
     public Page<Course> getCoursesByCategory(String categoryId, Pageable pageable) {
         return courseRepository.findByCategoryIdAndPublished(categoryId, pageable);
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "search", key = "'courses:' + #keyword + ':' + #pageable.pageNumber + ':' + #pageable.pageSize")
     public Page<Course> searchCourses(String keyword, Pageable pageable) {
         return courseRepository.searchByKeyword(keyword, pageable);
     }
@@ -183,20 +195,27 @@ public class CourseService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "courses", key = "'featured:' + #pageable.pageNumber + ':' + #pageable.pageSize")
     public Page<Course> getFeaturedCourses(Pageable pageable) {
         return courseRepository.findByIsFeaturedTrueAndIsPublishedTrueOrderByCreatedAtDesc(pageable);
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "courses", key = "'top-rated:' + #pageable.pageNumber + ':' + #pageable.pageSize")
     public Page<Course> getTopRatedCourses(Pageable pageable) {
         return courseRepository.findTopRatedCourses(pageable);
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "courses", key = "'most-enrolled:' + #pageable.pageNumber + ':' + #pageable.pageSize")
     public Page<Course> getMostEnrolledCourses(Pageable pageable) {
         return courseRepository.findMostEnrolledCourses(pageable);
     }
 
+    @Caching(evict = {
+        @CacheEvict(value = "courses", key = "#courseId"),
+        @CacheEvict(value = "courses", allEntries = true)
+    })
     public Course publishCourse(String courseId) {
         Course course = getCourseById(courseId);
         User currentUser = getCurrentUser();
@@ -238,6 +257,11 @@ public class CourseService {
         return savedCourse;
     }
 
+    @Caching(evict = {
+        @CacheEvict(value = "courses", key = "#courseId"),
+        @CacheEvict(value = "courses", allEntries = true),
+        @CacheEvict(value = "search", allEntries = true)
+    })
     public void deleteCourse(String courseId) {
         Course course = getCourseById(courseId);
         User currentUser = getCurrentUser();

@@ -7,7 +7,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -15,6 +21,8 @@ import org.springframework.stereotype.Service;
 public class EmailService {
 
     private final JavaMailSender mailSender;
+    private final EmailTemplateService templateService;
+    private final RateLimitService rateLimitService;
 
     @Value("${spring.mail.username}")
     private String fromEmail;
@@ -23,24 +31,20 @@ public class EmailService {
     private String frontendUrl;
 
     public void sendWelcomeEmail(User user) {
-        try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(fromEmail);
-            message.setTo(user.getEmail());
-            message.setSubject("Welcome to Modern LMS!");
-            message.setText(String.format(
-                "Hi %s,\n\n" +
-                "Welcome to Modern LMS! We're excited to have you join our learning community.\n\n" +
-                "Please verify your email by clicking the link below:\n" +
-                "%s/verify-email?token=%s\n\n" +
-                "Best regards,\n" +
-                "Modern LMS Team",
-                user.getFirstName(),
-                frontendUrl.split(",")[0], // Use first URL
-                user.getVerificationToken()
-            ));
+        // Check rate limit
+        if (!rateLimitService.checkEmailRateLimit(user.getId())) {
+            log.warn("Email rate limit exceeded for user: {}", user.getId());
+            return;
+        }
 
-            mailSender.send(message);
+        try {
+            Map<String, Object> templateData = new HashMap<>();
+            templateData.put("firstName", user.getFirstName());
+            templateData.put("verificationToken", user.getVerificationToken());
+
+            String htmlContent = templateService.generateWelcomeEmail(templateData);
+
+            sendHtmlEmail(user.getEmail(), "Welcome to Modern LMS!", htmlContent);
             log.info("Welcome email sent to: {}", user.getEmail());
         } catch (Exception e) {
             log.error("Failed to send welcome email to: {}", user.getEmail(), e);
@@ -235,6 +239,45 @@ public class EmailService {
             log.info("Certificate notification email sent to: {}", user.getEmail());
         } catch (Exception e) {
             log.error("Failed to send certificate notification email to: {}", user.getEmail(), e);
+        }
+    }
+
+    /**
+     * Send HTML email
+     */
+    private void sendHtmlEmail(String to, String subject, String htmlContent) throws MessagingException {
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+        helper.setFrom(fromEmail);
+        helper.setTo(to);
+        helper.setSubject(subject);
+        helper.setText(htmlContent, true); // true indicates HTML content
+
+        mailSender.send(message);
+    }
+
+    /**
+     * Enhanced password reset email with HTML template
+     */
+    public void sendPasswordResetEmailEnhanced(User user, String resetToken) {
+        // Check rate limit
+        if (!rateLimitService.checkEmailRateLimit(user.getId())) {
+            log.warn("Email rate limit exceeded for user: {}", user.getId());
+            return;
+        }
+
+        try {
+            Map<String, Object> templateData = new HashMap<>();
+            templateData.put("firstName", user.getFirstName());
+            templateData.put("resetToken", resetToken);
+
+            String htmlContent = templateService.generatePasswordResetEmail(templateData);
+
+            sendHtmlEmail(user.getEmail(), "Password Reset Request - Modern LMS", htmlContent);
+            log.info("Enhanced password reset email sent to: {}", user.getEmail());
+        } catch (Exception e) {
+            log.error("Failed to send enhanced password reset email to: {}", user.getEmail(), e);
         }
     }
 }

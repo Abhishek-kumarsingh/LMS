@@ -32,7 +32,26 @@ spring:
   
   flyway:
     enabled: false  # Disable for H2 in-memory
-  
+
+  # Redis Configuration (embedded for local testing)
+  redis:
+    host: localhost
+    port: 6379
+    password:
+    database: 1  # Use different database for local testing
+    timeout: 2000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+
+  # Cache Configuration
+  cache:
+    type: redis
+    redis:
+      time-to-live: 1800000 # 30 minutes for local testing
+
   # Disable mail for local testing
   mail:
     host: localhost

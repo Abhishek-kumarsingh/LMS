@@ -15,6 +15,9 @@ import com.lms.repository.UserRepository;
 import com.lms.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -121,16 +124,19 @@ public class UserService {
     }
 
     // Public methods for finding users
+    @Cacheable(value = "users", key = "#userId")
     public UserDto getUserById(String userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
         return userMapper.toDto(user);
     }
 
+    @Cacheable(value = "users", key = "#userId")
     public UserDto findById(String userId) {
         return getUserById(userId); // Delegate to getUserById for consistency
     }
 
+    @Cacheable(value = "users", key = "'email:' + #email")
     public UserDto findByEmail(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
@@ -174,6 +180,10 @@ public class UserService {
     }
 
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "users", key = "#userId"),
+        @CacheEvict(value = "users", key = "'email:' + #userDto.email", condition = "#userDto.email != null")
+    })
     public UserDto updateUser(String userId, UserDto userDto) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
@@ -199,11 +209,13 @@ public class UserService {
     }
 
     // Admin methods
+    @Cacheable(value = "users", key = "'all:' + #search + ':' + #role + ':' + #pageable.pageNumber + ':' + #pageable.pageSize")
     public Page<UserDto> getAllUsers(String search, User.Role role, Pageable pageable) {
         Page<User> users = userRepository.findUsersWithFilters(search, role, pageable);
         return users.map(userMapper::toDto);
     }
 
+    @Cacheable(value = "users", key = "'pending-instructors'")
     public List<UserDto> getPendingInstructors() {
         List<User> pendingInstructors = userRepository.findPendingInstructors();
         return pendingInstructors.stream()
@@ -249,6 +261,7 @@ public class UserService {
     }
 
     @Transactional
+    @CacheEvict(value = "users", key = "#userId")
     public void deleteUser(String userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));

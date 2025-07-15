@@ -8,6 +8,9 @@ import com.lms.repository.CategoryRepository;
 import com.lms.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -49,6 +52,11 @@ public class CategoryService {
         return savedCategory;
     }
 
+    @Caching(evict = {
+        @CacheEvict(value = "categories", key = "#categoryId"),
+        @CacheEvict(value = "categories", allEntries = true),
+        @CacheEvict(value = "search", allEntries = true)
+    })
     public Category updateCategory(String categoryId, Category categoryUpdate) {
         Category existingCategory = getCategoryById(categoryId);
         User currentUser = getCurrentUser();
@@ -84,6 +92,10 @@ public class CategoryService {
         return savedCategory;
     }
 
+    @Caching(evict = {
+        @CacheEvict(value = "categories", key = "#categoryId"),
+        @CacheEvict(value = "categories", allEntries = true)
+    })
     public Category toggleCategoryStatus(String categoryId) {
         Category category = getCategoryById(categoryId);
         User currentUser = getCurrentUser();
@@ -101,6 +113,11 @@ public class CategoryService {
         return savedCategory;
     }
 
+    @Caching(evict = {
+        @CacheEvict(value = "categories", key = "#categoryId"),
+        @CacheEvict(value = "categories", allEntries = true),
+        @CacheEvict(value = "search", allEntries = true)
+    })
     public void deleteCategory(String categoryId) {
         Category category = getCategoryById(categoryId);
         User currentUser = getCurrentUser();
@@ -119,23 +136,27 @@ public class CategoryService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "categories", key = "#categoryId")
     public Category getCategoryById(String categoryId) {
         return categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "categories", key = "'name:' + #name")
     public Category getCategoryByName(String name) {
         return categoryRepository.findByName(name)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "categories", key = "'active-list'")
     public List<Category> getAllActiveCategories() {
         return categoryRepository.findByIsActiveTrueOrderByName();
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "categories", key = "'active-page:' + #pageable.pageNumber + ':' + #pageable.pageSize")
     public Page<Category> getAllActiveCategories(Pageable pageable) {
         return categoryRepository.findByIsActiveTrueOrderByName(pageable);
     }
@@ -143,7 +164,7 @@ public class CategoryService {
     @Transactional(readOnly = true)
     public Page<Category> getAllCategories(Pageable pageable) {
         User currentUser = getCurrentUser();
-        
+
         if (!currentUser.isAdmin()) {
             throw new BadRequestException("Only admins can view all categories");
         }
@@ -152,16 +173,19 @@ public class CategoryService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "search", key = "'categories:' + #keyword")
     public List<Category> searchCategories(String keyword) {
         return categoryRepository.searchByName(keyword);
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "categories", key = "'with-course-count'")
     public List<Object[]> getCategoriesWithCourseCount() {
         return categoryRepository.getCategoriesWithCourseCount();
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "categories", key = "'with-published-courses'")
     public List<Category> getCategoriesWithPublishedCourses() {
         return categoryRepository.getCategoriesWithPublishedCourses();
     }

@@ -7,6 +7,7 @@ import com.lms.repository.*;
 import com.lms.service.messaging.MessagingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -308,6 +309,7 @@ public class AdminService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "statistics", key = "'system-stats'")
     public Map<String, Object> getSystemStats() {
         validateAdminAccess();
         

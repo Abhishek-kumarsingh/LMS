@@ -2,8 +2,10 @@ package com.lms.service;
 
 import com.lms.dto.auth.AuthResponse;
 import com.lms.dto.auth.LoginRequest;
+import com.lms.dto.auth.RefreshTokenRequest;
 import com.lms.dto.auth.RegisterRequest;
 import com.lms.dto.user.UserDto;
+import com.lms.entity.RefreshToken;
 import com.lms.entity.User;
 import com.lms.exception.BadRequestException;
 import com.lms.exception.ResourceNotFoundException;
@@ -21,6 +23,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -34,25 +42,54 @@ public class AuthService {
     private final JwtUtils jwtUtils;
     private final UserMapper userMapper;
     private final EmailService emailService;
+    private final RefreshTokenService refreshTokenService;
+    private final SecurityAuditService securityAuditService;
 
     @Transactional
-    public AuthResponse login(LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequest.getEmail(),
-                        loginRequest.getPassword()
-                )
-        );
+    public AuthResponse login(LoginRequest loginRequest, HttpServletRequest request) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getEmail(),
+                            loginRequest.getPassword()
+                    )
+            );
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtUtils.generateJwtToken(authentication);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        User user = userRepository.findByEmail(loginRequest.getEmail())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+            User user = userRepository.findByEmail(loginRequest.getEmail())
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        UserDto userDto = userMapper.toDto(user);
+            // Check if user account is active
+            if (!user.isActive()) {
+                throw new BadRequestException("Account is disabled");
+            }
 
-        return new AuthResponse(jwt, userDto);
+            // Generate tokens
+            String accessToken = jwtUtils.generateJwtToken(user.getEmail(), user.getId(), user.getRole().name());
+            RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId(), request);
+
+            // Calculate expiration info
+            Date expirationDate = jwtUtils.getExpirationDateFromToken(accessToken);
+            LocalDateTime expiresAt = expirationDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            long expiresIn = (expirationDate.getTime() - System.currentTimeMillis()) / 1000;
+
+            UserDto userDto = userMapper.toDto(user);
+
+            // Log successful authentication
+            securityAuditService.logSuccessfulAuthentication(user.getEmail(), request);
+
+            // Check for suspicious activity
+            String clientIp = request != null ? getClientIpAddress(request) : "unknown";
+            refreshTokenService.checkSuspiciousActivity(user.getId(), clientIp);
+
+            return new AuthResponse(accessToken, refreshToken.getToken(), userDto, expiresAt, expiresIn);
+
+        } catch (Exception e) {
+            // Log failed authentication
+            securityAuditService.logFailedAuthentication(loginRequest.getEmail(), e.getMessage(), request);
+            throw e;
+        }
     }
 
     @Transactional
@@ -137,5 +174,104 @@ public class AuthService {
         user.setResetPasswordExpires(null);
 
         userRepository.save(user);
+    }
+
+    /**
+     * Refresh access token using refresh token
+     */
+    @Transactional
+    public AuthResponse refreshToken(RefreshTokenRequest request, HttpServletRequest httpRequest) {
+        String requestRefreshToken = request.getRefreshToken();
+
+        RefreshToken refreshToken = refreshTokenService.findByToken(requestRefreshToken);
+        refreshToken = refreshTokenService.verifyExpiration(refreshToken);
+
+        User user = refreshToken.getUser();
+
+        // Generate new access token
+        String newAccessToken = jwtUtils.generateJwtToken(user.getEmail(), user.getId(), user.getRole().name());
+
+        // Calculate expiration info
+        Date expirationDate = jwtUtils.getExpirationDateFromToken(newAccessToken);
+        LocalDateTime expiresAt = expirationDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        long expiresIn = (expirationDate.getTime() - System.currentTimeMillis()) / 1000;
+
+        UserDto userDto = userMapper.toDto(user);
+
+        log.info("Refreshed access token for user: {}", user.getEmail());
+
+        return new AuthResponse(newAccessToken, requestRefreshToken, userDto, expiresAt, expiresIn);
+    }
+
+    /**
+     * Logout user and revoke refresh token
+     */
+    @Transactional
+    public void logout(String refreshToken, HttpServletRequest request) {
+        try {
+            refreshTokenService.revokeToken(refreshToken);
+            SecurityContextHolder.clearContext();
+
+            log.info("User logged out successfully");
+        } catch (Exception e) {
+            log.warn("Error during logout: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * Logout from all devices
+     */
+    @Transactional
+    public void logoutFromAllDevices(String userId, HttpServletRequest request) {
+        refreshTokenService.revokeAllUserTokens(userId);
+        SecurityContextHolder.clearContext();
+
+        securityAuditService.logAdminAction(userId, "LOGOUT_ALL_DEVICES", userId,
+            Map.of("reason", "User requested logout from all devices"), request);
+
+        log.info("User {} logged out from all devices", userId);
+    }
+
+    /**
+     * Get active sessions for a user
+     */
+    public List<RefreshToken> getActiveSessions(String userId) {
+        return refreshTokenService.getActiveTokensForUser(userId);
+    }
+
+    /**
+     * Revoke a specific session
+     */
+    @Transactional
+    public void revokeSession(String userId, String tokenId, HttpServletRequest request) {
+        List<RefreshToken> userTokens = refreshTokenService.getActiveTokensForUser(userId);
+        RefreshToken tokenToRevoke = userTokens.stream()
+            .filter(token -> token.getId().equals(tokenId))
+            .findFirst()
+            .orElseThrow(() -> new BadRequestException("Session not found"));
+
+        refreshTokenService.revokeToken(tokenToRevoke.getToken());
+
+        securityAuditService.logAdminAction(userId, "REVOKE_SESSION", userId,
+            Map.of("sessionId", tokenId), request);
+
+        log.info("Revoked session {} for user {}", tokenId, userId);
+    }
+
+    /**
+     * Extract client IP address from request
+     */
+    private String getClientIpAddress(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isEmpty() && !"unknown".equalsIgnoreCase(xForwardedFor)) {
+            return xForwardedFor.split(",")[0].trim();
+        }
+
+        String xRealIp = request.getHeader("X-Real-IP");
+        if (xRealIp != null && !xRealIp.isEmpty() && !"unknown".equalsIgnoreCase(xRealIp)) {
+            return xRealIp;
+        }
+
+        return request.getRemoteAddr();
     }
 }
