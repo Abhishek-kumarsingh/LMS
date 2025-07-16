@@ -620,3 +620,259 @@ export interface StudySession {
   notes?: string;
   effectiveness?: number; // 1-5 rating
 }
+
+// Content Authoring Types
+export interface ContentTemplate {
+  id: string;
+  name: string;
+  description: string;
+  category: TemplateCategory;
+  thumbnail: string;
+  structure: ContentBlock[];
+  metadata: TemplateMetadata;
+  isPublic: boolean;
+  createdBy: string;
+  creator?: User;
+  usageCount: number;
+  rating: number;
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type TemplateCategory =
+  | 'LESSON'
+  | 'ASSIGNMENT'
+  | 'QUIZ'
+  | 'PRESENTATION'
+  | 'INTERACTIVE'
+  | 'ASSESSMENT'
+  | 'MULTIMEDIA'
+  | 'DOCUMENT';
+
+export interface TemplateMetadata {
+  estimatedDuration: number; // minutes
+  difficulty: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+  learningObjectives: string[];
+  prerequisites: string[];
+  targetAudience: string[];
+  language: string;
+  accessibility: AccessibilityFeatures;
+}
+
+export interface AccessibilityFeatures {
+  hasAltText: boolean;
+  hasClosedCaptions: boolean;
+  hasTranscripts: boolean;
+  hasKeyboardNavigation: boolean;
+  hasScreenReaderSupport: boolean;
+  colorContrastCompliant: boolean;
+}
+
+export interface ContentBlock {
+  id: string;
+  type: BlockType;
+  position: number;
+  content: BlockContent;
+  settings: BlockSettings;
+  interactions: BlockInteraction[];
+  analytics: BlockAnalytics;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type BlockType =
+  | 'TEXT'
+  | 'IMAGE'
+  | 'VIDEO'
+  | 'AUDIO'
+  | 'QUIZ'
+  | 'INTERACTIVE'
+  | 'CODE'
+  | 'MATH'
+  | 'EMBED'
+  | 'FILE'
+  | 'DIVIDER'
+  | 'CALLOUT'
+  | 'TABS'
+  | 'ACCORDION'
+  | 'TIMELINE'
+  | 'CHART'
+  | 'MAP'
+  | 'FORM';
+
+export interface BlockContent {
+  // Text content
+  text?: RichTextContent;
+
+  // Media content
+  mediaUrl?: string;
+  mediaType?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'DOCUMENT';
+  mediaThumbnail?: string;
+  mediaMetadata?: MediaMetadata;
+
+  // Interactive content
+  quizData?: QuizBlockData;
+  interactiveData?: InteractiveBlockData;
+  codeData?: CodeBlockData;
+  mathData?: MathBlockData;
+  embedData?: EmbedBlockData;
+
+  // Layout content
+  tabsData?: TabsBlockData;
+  accordionData?: AccordionBlockData;
+  timelineData?: TimelineBlockData;
+  chartData?: ChartBlockData;
+
+  // Form content
+  formData?: FormBlockData;
+}
+
+export interface RichTextContent {
+  html: string;
+  markdown?: string;
+  plainText: string;
+  wordCount: number;
+  readingTime: number; // minutes
+  links: LinkData[];
+  mentions: MentionData[];
+}
+
+export interface LinkData {
+  url: string;
+  text: string;
+  isExternal: boolean;
+  position: number;
+}
+
+export interface MentionData {
+  userId: string;
+  username: string;
+  displayName: string;
+  position: number;
+}
+
+export interface MediaMetadata {
+  filename: string;
+  fileSize: number;
+  mimeType: string;
+  duration?: number; // for video/audio
+  dimensions?: { width: number; height: number };
+  altText?: string;
+  caption?: string;
+  transcript?: string;
+  chapters?: MediaChapter[];
+  quality?: MediaQuality[];
+}
+
+export interface MediaChapter {
+  id: string;
+  title: string;
+  startTime: number;
+  endTime: number;
+  description?: string;
+  thumbnail?: string;
+}
+
+export interface MediaQuality {
+  resolution: string;
+  bitrate: number;
+  fileSize: number;
+  url: string;
+}
+
+export interface QuizBlockData {
+  questions: QuizQuestion[];
+  settings: QuizSettings;
+  results?: QuizResults;
+}
+
+export interface QuizQuestion {
+  id: string;
+  type: QuestionType;
+  question: string;
+  options?: QuestionOption[];
+  correctAnswer: string | string[];
+  explanation?: string;
+  points: number;
+  timeLimit?: number;
+  hints?: string[];
+  media?: MediaMetadata;
+}
+
+export interface QuestionOption {
+  id: string;
+  text: string;
+  isCorrect: boolean;
+  feedback?: string;
+  media?: MediaMetadata;
+}
+
+export interface QuizSettings {
+  allowMultipleAttempts: boolean;
+  maxAttempts?: number;
+  timeLimit?: number;
+  showCorrectAnswers: boolean;
+  showExplanations: boolean;
+  randomizeQuestions: boolean;
+  randomizeOptions: boolean;
+  passingScore?: number;
+}
+
+export interface QuizResults {
+  totalQuestions: number;
+  correctAnswers: number;
+  score: number;
+  timeSpent: number;
+  attempts: number;
+  completedAt: string;
+}
+
+export interface InteractiveBlockData {
+  type: InteractiveType;
+  config: InteractiveConfig;
+  assets: InteractiveAsset[];
+}
+
+export type InteractiveType =
+  | 'DRAG_DROP'
+  | 'HOTSPOT'
+  | 'SIMULATION'
+  | 'GAME'
+  | 'VIRTUAL_LAB'
+  | 'AR_VR'
+  | 'INTERACTIVE_VIDEO'
+  | 'BRANCHING_SCENARIO';
+
+export interface InteractiveConfig {
+  width: number;
+  height: number;
+  backgroundColor?: string;
+  instructions?: string;
+  feedback?: InteractiveFeedback;
+  scoring?: InteractiveScoring;
+  accessibility?: AccessibilityFeatures;
+}
+
+export interface InteractiveFeedback {
+  correct: string;
+  incorrect: string;
+  partial?: string;
+  hint?: string;
+}
+
+export interface InteractiveScoring {
+  maxPoints: number;
+  passingScore: number;
+  attempts: number;
+  timeBonus?: boolean;
+}
+
+export interface InteractiveAsset {
+  id: string;
+  type: 'IMAGE' | 'AUDIO' | 'VIDEO' | 'MODEL_3D';
+  url: string;
+  metadata: MediaMetadata;
+  position?: { x: number; y: number; z?: number };
+  properties?: Record<string, any>;
+}
