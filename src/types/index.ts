@@ -275,3 +275,174 @@ export interface DiscussionPostVote {
   voteType: 'UPVOTE' | 'DOWNVOTE';
   createdAt: string;
 }
+
+// Analytics and Reporting Types
+export interface AnalyticsDashboard {
+  courseId: string;
+  course?: Course;
+  overview: AnalyticsOverview;
+  studentEngagement: StudentEngagementMetrics;
+  contentPerformance: ContentPerformanceMetrics;
+  assessmentAnalytics: AssessmentAnalyticsMetrics;
+  forumActivity: ForumActivityMetrics;
+  timeAnalytics: TimeAnalyticsMetrics;
+  generatedAt: string;
+}
+
+export interface AnalyticsOverview {
+  totalStudents: number;
+  activeStudents: number;
+  completionRate: number;
+  averageGrade: number;
+  totalContent: number;
+  totalAssignments: number;
+  totalQuizzes: number;
+  totalForumPosts: number;
+  engagementScore: number;
+  retentionRate: number;
+}
+
+export interface StudentEngagementMetrics {
+  dailyActiveUsers: TimeSeriesData[];
+  weeklyActiveUsers: TimeSeriesData[];
+  loginFrequency: DistributionData[];
+  sessionDuration: DistributionData[];
+  contentInteractions: TimeSeriesData[];
+  participationRate: number;
+  averageSessionTime: number;
+  peakActivityHours: number[];
+  deviceUsage: DeviceUsageData[];
+  engagementTrends: EngagementTrendData[];
+}
+
+export interface ContentPerformanceMetrics {
+  contentViews: ContentViewData[];
+  completionRates: ContentCompletionData[];
+  timeSpent: ContentTimeData[];
+  popularContent: PopularContentData[];
+  strugglingAreas: StruggleAreaData[];
+  contentEffectiveness: ContentEffectivenessData[];
+  videoAnalytics: VideoAnalyticsData[];
+  downloadStats: DownloadStatsData[];
+}
+
+export interface AssessmentAnalyticsMetrics {
+  gradeDistribution: GradeDistributionData[];
+  averageScores: TimeSeriesData[];
+  submissionPatterns: SubmissionPatternData[];
+  questionAnalytics: QuestionAnalyticsData[];
+  cheatingIndicators: CheatingIndicatorData[];
+  improvementTrends: ImprovementTrendData[];
+  difficultyAnalysis: DifficultyAnalysisData[];
+  retakePatterns: RetakePatternData[];
+}
+
+export interface ForumActivityMetrics {
+  postActivity: TimeSeriesData[];
+  userParticipation: UserParticipationData[];
+  topicPopularity: TopicPopularityData[];
+  responseTime: ResponseTimeData[];
+  sentimentAnalysis: SentimentAnalysisData[];
+  moderationStats: ModerationStatsData[];
+  knowledgeSharing: KnowledgeSharingData[];
+}
+
+export interface TimeAnalyticsMetrics {
+  studyPatterns: StudyPatternData[];
+  peakUsageHours: PeakUsageData[];
+  seasonalTrends: SeasonalTrendData[];
+  deadlineImpact: DeadlineImpactData[];
+  procrastinationIndicators: ProcrastinationData[];
+  optimalStudyTimes: OptimalStudyTimeData[];
+}
+
+// Data Structure Types
+export interface TimeSeriesData {
+  date: string;
+  value: number;
+  label?: string;
+  metadata?: Record<string, any>;
+}
+
+export interface DistributionData {
+  category: string;
+  value: number;
+  percentage: number;
+  color?: string;
+}
+
+export interface DeviceUsageData {
+  device: 'Desktop' | 'Mobile' | 'Tablet';
+  sessions: number;
+  percentage: number;
+  averageTime: number;
+}
+
+export interface EngagementTrendData {
+  studentId: string;
+  student?: User;
+  engagementScore: number;
+  trend: 'increasing' | 'decreasing' | 'stable';
+  lastActive: string;
+  riskLevel: 'low' | 'medium' | 'high';
+}
+
+export interface ContentViewData {
+  contentId: string;
+  contentTitle: string;
+  contentType: string;
+  views: number;
+  uniqueViews: number;
+  averageTime: number;
+  completionRate: number;
+}
+
+export interface ContentCompletionData {
+  contentId: string;
+  contentTitle: string;
+  totalStudents: number;
+  completedStudents: number;
+  completionRate: number;
+  averageCompletionTime: number;
+}
+
+export interface PopularContentData {
+  contentId: string;
+  title: string;
+  type: string;
+  score: number;
+  views: number;
+  engagement: number;
+}
+
+export interface GradeDistributionData {
+  grade: string;
+  count: number;
+  percentage: number;
+  cumulative: number;
+}
+
+export interface SubmissionPatternData {
+  timeToDeadline: string;
+  submissions: number;
+  percentage: number;
+  averageGrade: number;
+}
+
+export interface QuestionAnalyticsData {
+  questionId: string;
+  questionText: string;
+  correctRate: number;
+  averageTime: number;
+  difficulty: 'easy' | 'medium' | 'hard';
+  discrimination: number;
+}
+
+export interface UserParticipationData {
+  userId: string;
+  user?: User;
+  posts: number;
+  replies: number;
+  votes: number;
+  participationScore: number;
+}
