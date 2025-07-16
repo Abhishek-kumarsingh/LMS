@@ -876,3 +876,379 @@ export interface InteractiveAsset {
   position?: { x: number; y: number; z?: number };
   properties?: Record<string, any>;
 }
+
+// Video Streaming Platform Types
+export interface VideoStream {
+  id: string;
+  title: string;
+  description?: string;
+  courseId?: string;
+  course?: Course;
+  instructorId: string;
+  instructor?: User;
+  streamType: StreamType;
+  status: StreamStatus;
+  scheduledStartTime?: string;
+  actualStartTime?: string;
+  endTime?: string;
+  duration?: number;
+  streamUrl?: string;
+  playbackUrl?: string;
+  thumbnailUrl?: string;
+  recordingUrl?: string;
+  chatEnabled: boolean;
+  qaEnabled: boolean;
+  pollsEnabled: boolean;
+  screenShareEnabled: boolean;
+  maxViewers?: number;
+  currentViewers: number;
+  totalViews: number;
+  settings: StreamSettings;
+  analytics: StreamAnalytics;
+  interactions: StreamInteraction[];
+  recordings: StreamRecording[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type StreamType = 'LIVE' | 'RECORDED' | 'WEBINAR' | 'MEETING' | 'PRESENTATION';
+export type StreamStatus = 'SCHEDULED' | 'LIVE' | 'ENDED' | 'CANCELLED' | 'PROCESSING';
+
+export interface StreamSettings {
+  quality: VideoQuality;
+  autoRecord: boolean;
+  allowDownload: boolean;
+  requireAuth: boolean;
+  moderationEnabled: boolean;
+  chatModeration: boolean;
+  waitingRoom: boolean;
+  password?: string;
+  accessControl: AccessControl;
+  notifications: NotificationSettings;
+  branding: BrandingSettings;
+}
+
+export type VideoQuality = '240p' | '360p' | '480p' | '720p' | '1080p' | '4K' | 'AUTO';
+
+export interface AccessControl {
+  type: 'PUBLIC' | 'COURSE' | 'PRIVATE' | 'PASSWORD';
+  allowedUsers?: string[];
+  allowedRoles?: ('STUDENT' | 'INSTRUCTOR' | 'ADMIN')[];
+  registrationRequired: boolean;
+  approvalRequired: boolean;
+}
+
+export interface NotificationSettings {
+  emailReminders: boolean;
+  pushNotifications: boolean;
+  reminderTimes: number[]; // minutes before start
+  notifyOnStart: boolean;
+  notifyOnEnd: boolean;
+}
+
+export interface BrandingSettings {
+  logo?: string;
+  colors: {
+    primary: string;
+    secondary: string;
+    background: string;
+    text: string;
+  };
+  customCSS?: string;
+  watermark?: string;
+}
+
+export interface StreamAnalytics {
+  totalViews: number;
+  uniqueViewers: number;
+  averageWatchTime: number;
+  peakViewers: number;
+  engagementRate: number;
+  chatMessages: number;
+  pollResponses: number;
+  qaQuestions: number;
+  dropOffPoints: DropOffPoint[];
+  viewerRetention: RetentionData[];
+  geographicData: GeographicData[];
+  deviceData: DeviceData[];
+  qualityMetrics: QualityMetrics;
+}
+
+export interface DropOffPoint {
+  timestamp: number;
+  viewersLeft: number;
+  percentage: number;
+  reason?: string;
+}
+
+export interface RetentionData {
+  timestamp: number;
+  viewersRemaining: number;
+  percentage: number;
+}
+
+export interface GeographicData {
+  country: string;
+  region?: string;
+  city?: string;
+  viewers: number;
+  percentage: number;
+}
+
+export interface DeviceData {
+  device: 'Desktop' | 'Mobile' | 'Tablet' | 'TV';
+  browser?: string;
+  os?: string;
+  viewers: number;
+  percentage: number;
+}
+
+export interface QualityMetrics {
+  averageBitrate: number;
+  bufferingEvents: number;
+  averageBufferTime: number;
+  qualityChanges: number;
+  errorRate: number;
+  latency: number;
+}
+
+export interface StreamInteraction {
+  id: string;
+  streamId: string;
+  userId: string;
+  user?: User;
+  type: InteractionType;
+  content: InteractionContent;
+  timestamp: number;
+  isModerated: boolean;
+  isHighlighted: boolean;
+  reactions: InteractionReaction[];
+  createdAt: string;
+}
+
+export type InteractionType = 'CHAT' | 'QA' | 'POLL' | 'REACTION' | 'RAISE_HAND' | 'SCREEN_SHARE';
+
+export interface InteractionContent {
+  // Chat message
+  message?: string;
+
+  // Q&A
+  question?: string;
+  answer?: string;
+  isAnswered?: boolean;
+
+  // Poll
+  pollId?: string;
+  pollQuestion?: string;
+  pollOptions?: PollOption[];
+  pollResponse?: string;
+
+  // Reaction
+  emoji?: string;
+
+  // Screen share
+  screenShareUrl?: string;
+}
+
+export interface PollOption {
+  id: string;
+  text: string;
+  votes: number;
+  percentage: number;
+}
+
+export interface InteractionReaction {
+  userId: string;
+  emoji: string;
+  timestamp: number;
+}
+
+export interface StreamRecording {
+  id: string;
+  streamId: string;
+  title: string;
+  description?: string;
+  url: string;
+  thumbnailUrl?: string;
+  duration: number;
+  fileSize: number;
+  quality: VideoQuality;
+  format: 'MP4' | 'WebM' | 'HLS';
+  isProcessed: boolean;
+  isPublic: boolean;
+  downloadCount: number;
+  viewCount: number;
+  chapters: VideoChapter[];
+  captions: VideoCaption[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface VideoChapter {
+  id: string;
+  title: string;
+  startTime: number;
+  endTime: number;
+  description?: string;
+  thumbnailUrl?: string;
+}
+
+export interface VideoCaption {
+  id: string;
+  language: string;
+  label: string;
+  url: string;
+  isDefault: boolean;
+  isAutoGenerated: boolean;
+}
+
+export interface VideoPlayer {
+  id: string;
+  videoId: string;
+  userId?: string;
+  currentTime: number;
+  duration: number;
+  volume: number;
+  playbackRate: number;
+  quality: VideoQuality;
+  isPlaying: boolean;
+  isPaused: boolean;
+  isBuffering: boolean;
+  isFullscreen: boolean;
+  isPictureInPicture: boolean;
+  subtitlesEnabled: boolean;
+  selectedSubtitleTrack?: string;
+  watchHistory: WatchHistoryEntry[];
+  bookmarks: VideoBookmark[];
+  notes: VideoNote[];
+  settings: PlayerSettings;
+}
+
+export interface WatchHistoryEntry {
+  timestamp: number;
+  watchTime: number;
+  completed: boolean;
+  sessionId: string;
+  deviceInfo: string;
+  createdAt: string;
+}
+
+export interface VideoBookmark {
+  id: string;
+  timestamp: number;
+  title: string;
+  description?: string;
+  isPublic: boolean;
+  createdAt: string;
+}
+
+export interface VideoNote {
+  id: string;
+  timestamp: number;
+  content: string;
+  isPrivate: boolean;
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PlayerSettings {
+  autoplay: boolean;
+  autoQuality: boolean;
+  preferredQuality: VideoQuality;
+  playbackSpeed: number;
+  volume: number;
+  subtitlesEnabled: boolean;
+  preferredSubtitleLanguage: string;
+  keyboardShortcuts: boolean;
+  theaterMode: boolean;
+  darkMode: boolean;
+}
+
+export interface LiveStreamSession {
+  id: string;
+  streamId: string;
+  userId: string;
+  user?: User;
+  joinedAt: string;
+  leftAt?: string;
+  duration?: number;
+  watchTime: number;
+  interactions: number;
+  quality: VideoQuality;
+  deviceInfo: string;
+  ipAddress: string;
+  location?: {
+    country: string;
+    region: string;
+    city: string;
+  };
+}
+
+export interface StreamChat {
+  id: string;
+  streamId: string;
+  messages: ChatMessage[];
+  moderators: string[];
+  settings: ChatSettings;
+  analytics: ChatAnalytics;
+}
+
+export interface ChatMessage {
+  id: string;
+  userId: string;
+  user?: User;
+  content: string;
+  timestamp: number;
+  isModerated: boolean;
+  isDeleted: boolean;
+  reactions: MessageReaction[];
+  replies: ChatMessage[];
+  mentions: string[];
+  attachments: MessageAttachment[];
+}
+
+export interface MessageReaction {
+  emoji: string;
+  users: string[];
+  count: number;
+}
+
+export interface MessageAttachment {
+  id: string;
+  type: 'IMAGE' | 'FILE' | 'LINK';
+  url: string;
+  filename?: string;
+  fileSize?: number;
+  mimeType?: string;
+}
+
+export interface ChatSettings {
+  enabled: boolean;
+  moderationEnabled: boolean;
+  slowMode: boolean;
+  slowModeDelay: number; // seconds
+  linksAllowed: boolean;
+  emojisAllowed: boolean;
+  fileUploadsAllowed: boolean;
+  maxMessageLength: number;
+  profanityFilter: boolean;
+  requireApproval: boolean;
+}
+
+export interface ChatAnalytics {
+  totalMessages: number;
+  uniqueParticipants: number;
+  averageMessagesPerUser: number;
+  peakActivity: number;
+  moderatedMessages: number;
+  deletedMessages: number;
+  topEmojis: EmojiUsage[];
+  participationRate: number;
+}
+
+export interface EmojiUsage {
+  emoji: string;
+  count: number;
+  percentage: number;
+}
