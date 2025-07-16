@@ -197,3 +197,81 @@ export interface QuestionAnswer {
   createdAt: string;
   updatedAt: string;
 }
+
+// Discussion Forum Types
+export interface DiscussionForum {
+  id: string;
+  courseId: string;
+  course?: Course;
+  title: string;
+  description?: string;
+  forumType: ForumType;
+  isPinned: boolean;
+  isLocked: boolean;
+  isModerated: boolean;
+  createdBy: string;
+  creator?: User;
+  moderators: string[]; // Array of user IDs
+  postCount: number;
+  lastPostAt?: string;
+  lastPostBy?: string;
+  lastPostAuthor?: User;
+  posts: DiscussionPost[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type ForumType =
+  | 'GENERAL'
+  | 'Q_AND_A'
+  | 'ANNOUNCEMENTS'
+  | 'ASSIGNMENTS'
+  | 'STUDY_GROUP'
+  | 'TECHNICAL_SUPPORT';
+
+export interface DiscussionPost {
+  id: string;
+  forumId: string;
+  forum?: DiscussionForum;
+  parentPostId?: string;
+  parentPost?: DiscussionPost;
+  authorId: string;
+  author?: User;
+  title?: string;
+  content: string;
+  postType: PostType;
+  isPinned: boolean;
+  isLocked: boolean;
+  isApproved: boolean;
+  isAnonymous: boolean;
+  upvotes: number;
+  downvotes: number;
+  replyCount: number;
+  viewCount: number;
+  lastReplyAt?: string;
+  lastReplyBy?: string;
+  lastReplyAuthor?: User;
+  attachments: string[]; // Array of file URLs
+  tags: string[]; // Array of tags
+  replies: DiscussionPost[];
+  votes: DiscussionPostVote[];
+  userVote?: DiscussionPostVote;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type PostType =
+  | 'DISCUSSION'
+  | 'QUESTION'
+  | 'ANNOUNCEMENT'
+  | 'ANSWER'
+  | 'COMMENT';
+
+export interface DiscussionPostVote {
+  id: string;
+  postId: string;
+  userId: string;
+  user?: User;
+  voteType: 'UPVOTE' | 'DOWNVOTE';
+  createdAt: string;
+}
