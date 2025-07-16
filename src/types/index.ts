@@ -446,3 +446,177 @@ export interface UserParticipationData {
   votes: number;
   participationScore: number;
 }
+
+// Calendar and Event Types
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  description?: string;
+  eventType: EventType;
+  courseId?: string;
+  course?: Course;
+  assignmentId?: string;
+  assignment?: Assignment;
+  quizId?: string;
+  quiz?: Quiz;
+  createdBy: string;
+  creator?: User;
+  startTime: string;
+  endTime?: string;
+  isAllDay: boolean;
+  location?: string;
+  meetingUrl?: string;
+  attendees: string[]; // Array of user IDs
+  attendeeUsers?: User[];
+  reminderMinutes: number;
+  isRecurring: boolean;
+  recurrencePattern?: RecurrencePattern;
+  isCancelled: boolean;
+  color?: string;
+  priority: EventPriority;
+  visibility: EventVisibility;
+  attachments: string[]; // Array of file URLs
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type EventType =
+  | 'ASSIGNMENT'
+  | 'QUIZ'
+  | 'LESSON'
+  | 'LECTURE'
+  | 'MEETING'
+  | 'OFFICE_HOURS'
+  | 'EXAM'
+  | 'DEADLINE'
+  | 'HOLIDAY'
+  | 'PERSONAL'
+  | 'STUDY_SESSION'
+  | 'GROUP_WORK';
+
+export type EventPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+export type EventVisibility = 'PUBLIC' | 'COURSE' | 'PRIVATE';
+
+export interface RecurrencePattern {
+  frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
+  interval: number; // Every N days/weeks/months/years
+  daysOfWeek?: number[]; // 0-6 (Sunday-Saturday)
+  dayOfMonth?: number; // 1-31
+  weekOfMonth?: number; // 1-4
+  monthOfYear?: number; // 1-12
+  endDate?: string;
+  occurrences?: number;
+}
+
+export interface CalendarView {
+  id: string;
+  name: string;
+  userId: string;
+  viewType: CalendarViewType;
+  filters: CalendarFilters;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type CalendarViewType = 'MONTH' | 'WEEK' | 'DAY' | 'AGENDA' | 'YEAR';
+
+export interface CalendarFilters {
+  eventTypes: EventType[];
+  courseIds: string[];
+  priorities: EventPriority[];
+  showCompleted: boolean;
+  showCancelled: boolean;
+  dateRange?: {
+    start: string;
+    end: string;
+  };
+}
+
+export interface EventReminder {
+  id: string;
+  eventId: string;
+  userId: string;
+  reminderTime: string;
+  reminderType: ReminderType;
+  isDelivered: boolean;
+  deliveredAt?: string;
+  createdAt: string;
+}
+
+export type ReminderType = 'EMAIL' | 'PUSH' | 'SMS' | 'IN_APP';
+
+export interface CalendarIntegration {
+  id: string;
+  userId: string;
+  provider: CalendarProvider;
+  externalCalendarId: string;
+  accessToken: string;
+  refreshToken?: string;
+  syncEnabled: boolean;
+  lastSyncAt?: string;
+  syncDirection: SyncDirection;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type CalendarProvider = 'GOOGLE' | 'OUTLOOK' | 'APPLE' | 'ICAL';
+export type SyncDirection = 'IMPORT' | 'EXPORT' | 'BIDIRECTIONAL';
+
+export interface EventConflict {
+  id: string;
+  userId: string;
+  event1Id: string;
+  event2Id: string;
+  conflictType: ConflictType;
+  severity: ConflictSeverity;
+  isResolved: boolean;
+  resolvedAt?: string;
+  resolution?: string;
+  createdAt: string;
+}
+
+export type ConflictType = 'TIME_OVERLAP' | 'LOCATION_CONFLICT' | 'RESOURCE_CONFLICT';
+export type ConflictSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+
+export interface StudySchedule {
+  id: string;
+  userId: string;
+  courseId?: string;
+  title: string;
+  description?: string;
+  studyGoals: StudyGoal[];
+  schedule: StudySession[];
+  isActive: boolean;
+  startDate: string;
+  endDate: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StudyGoal {
+  id: string;
+  title: string;
+  description?: string;
+  targetHours: number;
+  completedHours: number;
+  deadline?: string;
+  priority: EventPriority;
+  isCompleted: boolean;
+}
+
+export interface StudySession {
+  id: string;
+  scheduleId: string;
+  title: string;
+  startTime: string;
+  endTime: string;
+  courseId?: string;
+  topicIds: string[];
+  isCompleted: boolean;
+  actualStartTime?: string;
+  actualEndTime?: string;
+  notes?: string;
+  effectiveness?: number; // 1-5 rating
+}
