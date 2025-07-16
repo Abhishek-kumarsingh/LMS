@@ -315,6 +315,146 @@ export interface StudentEngagementMetrics {
   engagementTrends: EngagementTrendData[];
 }
 
+// Missing Analytics Data Interfaces
+export interface ContentTimeData {
+  timeSpent: number;
+  averageTime: number;
+  completionTime: number;
+  engagementTime: number;
+}
+
+export interface StruggleAreaData {
+  topic: string;
+  difficulty: number;
+  completionRate: number;
+  averageAttempts: number;
+}
+
+export interface ContentEffectivenessData {
+  contentId: string;
+  effectivenessScore: number;
+  learningOutcomes: number;
+  studentSatisfaction: number;
+}
+
+export interface VideoAnalyticsData {
+  watchTime: number;
+  completionRate: number;
+  dropOffPoints: number[];
+  replaySegments: number[];
+}
+
+export interface DownloadStatsData {
+  totalDownloads: number;
+  uniqueDownloaders: number;
+  averageDownloadTime: number;
+  popularContent: string[];
+}
+
+export interface CheatingIndicatorData {
+  suspiciousActivity: number;
+  flaggedSubmissions: number;
+  timeAnomalies: number;
+  patternMatches: number;
+}
+
+export interface ImprovementTrendData {
+  trend: 'improving' | 'declining' | 'stable';
+  rate: number;
+  timeframe: string;
+  factors: string[];
+}
+
+export interface DifficultyAnalysisData {
+  level: 'easy' | 'medium' | 'hard';
+  successRate: number;
+  averageAttempts: number;
+  timeToComplete: number;
+}
+
+export interface RetakePatternData {
+  retakeRate: number;
+  averageRetakes: number;
+  improvementRate: number;
+  commonReasons: string[];
+}
+
+export interface TopicPopularityData {
+  topic: string;
+  views: number;
+  engagement: number;
+  rating: number;
+}
+
+export interface ResponseTimeData {
+  averageTime: number;
+  medianTime: number;
+  quickResponses: number;
+  slowResponses: number;
+}
+
+export interface SentimentAnalysisData {
+  positive: number;
+  negative: number;
+  neutral: number;
+  trends: Array<{ date: string; sentiment: number }>;
+}
+
+export interface ModerationStatsData {
+  totalPosts: number;
+  moderatedPosts: number;
+  flaggedContent: number;
+  responseTime: number;
+}
+
+export interface KnowledgeSharingData {
+  sharedResources: number;
+  helpfulAnswers: number;
+  collaborations: number;
+  mentorships: number;
+}
+
+export interface StudyPatternData {
+  peakHours: string[];
+  studyDuration: number;
+  frequency: number;
+  consistency: number;
+}
+
+export interface PeakUsageData {
+  hour: number;
+  users: number;
+  activities: number;
+  performance: number;
+}
+
+export interface SeasonalTrendData {
+  season: string;
+  usage: number;
+  performance: number;
+  engagement: number;
+}
+
+export interface DeadlineImpactData {
+  beforeDeadline: number;
+  nearDeadline: number;
+  afterDeadline: number;
+  qualityImpact: number;
+}
+
+export interface ProcrastinationData {
+  procrastinationRate: number;
+  lastMinuteSubmissions: number;
+  qualityCorrelation: number;
+  interventionSuccess: number;
+}
+
+export interface OptimalStudyTimeData {
+  optimalHours: string[];
+  performanceByTime: Array<{ hour: string; performance: number }>;
+  recommendations: string[];
+}
+
 export interface ContentPerformanceMetrics {
   contentViews: ContentViewData[];
   completionRates: ContentCompletionData[];
@@ -445,6 +585,73 @@ export interface UserParticipationData {
   replies: number;
   votes: number;
   participationScore: number;
+}
+
+// File and Attachment Types
+export interface FileAttachment {
+  id: string;
+  filename: string;
+  originalName: string;
+  mimeType: string;
+  fileSize: number;
+  url: string;
+  uploadedAt: string;
+  uploadedBy: string;
+}
+
+// Assignment Types
+export interface Assignment {
+  id: string;
+  title: string;
+  description: string;
+  courseId: string;
+  course?: Course;
+  instructions: string;
+  dueDate: string;
+  maxPoints: number;
+  submissionType: 'file' | 'text' | 'url' | 'quiz';
+  allowLateSubmissions: boolean;
+  latePenalty: number;
+  groupAssignment: boolean;
+  rubric?: AssignmentRubric;
+  attachments: FileAttachment[];
+  submissions: AssignmentSubmission[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AssignmentRubric {
+  id: string;
+  criteria: RubricCriterion[];
+  totalPoints: number;
+}
+
+export interface RubricCriterion {
+  id: string;
+  name: string;
+  description: string;
+  points: number;
+  levels: RubricLevel[];
+}
+
+export interface RubricLevel {
+  id: string;
+  name: string;
+  description: string;
+  points: number;
+}
+
+export interface AssignmentSubmission {
+  id: string;
+  assignmentId: string;
+  studentId: string;
+  student?: User;
+  content: string;
+  attachments: FileAttachment[];
+  submittedAt: string;
+  grade?: number;
+  feedback?: string;
+  status: 'draft' | 'submitted' | 'graded' | 'returned';
 }
 
 // Calendar and Event Types
@@ -667,6 +874,135 @@ export interface AccessibilityFeatures {
   hasKeyboardNavigation: boolean;
   hasScreenReaderSupport: boolean;
   colorContrastCompliant: boolean;
+}
+
+// Block-related interfaces
+export interface BlockSettings {
+  visible: boolean;
+  backgroundColor: string;
+  padding: 'small' | 'medium' | 'large';
+  margin: 'small' | 'medium' | 'large';
+  borderRadius: number;
+  shadow: boolean;
+  animation?: string;
+  responsive: {
+    mobile: boolean;
+    tablet: boolean;
+    desktop: boolean;
+  };
+}
+
+export interface BlockInteraction {
+  id: string;
+  userId: string;
+  type: 'view' | 'click' | 'hover' | 'focus' | 'complete';
+  timestamp: string;
+  duration?: number;
+  data?: Record<string, any>;
+}
+
+export interface BlockAnalytics {
+  views: number;
+  interactions: number;
+  completions: number;
+  averageTime: number;
+  engagementRate: number;
+  lastUpdated: string;
+}
+
+export interface CodeBlockData {
+  language: string;
+  code: string;
+  theme: string;
+  showLineNumbers: boolean;
+  highlightLines: number[];
+  executable: boolean;
+  output?: string;
+}
+
+export interface MathBlockData {
+  formula: string;
+  notation: 'latex' | 'mathml' | 'asciimath';
+  displayMode: 'inline' | 'block';
+  interactive: boolean;
+  variables?: Record<string, number>;
+}
+
+export interface EmbedBlockData {
+  url: string;
+  type: 'iframe' | 'video' | 'audio' | 'document';
+  width: string;
+  height: string;
+  allowFullscreen: boolean;
+  sandbox: string[];
+}
+
+export interface TabsBlockData {
+  tabs: Array<{
+    id: string;
+    title: string;
+    content: string;
+    icon?: string;
+  }>;
+  defaultTab: string;
+  orientation: 'horizontal' | 'vertical';
+}
+
+export interface AccordionBlockData {
+  items: Array<{
+    id: string;
+    title: string;
+    content: string;
+    expanded: boolean;
+  }>;
+  allowMultiple: boolean;
+  expandFirst: boolean;
+}
+
+export interface TimelineBlockData {
+  events: Array<{
+    id: string;
+    date: string;
+    title: string;
+    description: string;
+    icon?: string;
+    color?: string;
+  }>;
+  orientation: 'vertical' | 'horizontal';
+  showDates: boolean;
+}
+
+export interface ChartBlockData {
+  type: 'bar' | 'line' | 'pie' | 'scatter' | 'area';
+  data: Array<{
+    label: string;
+    value: number;
+    color?: string;
+  }>;
+  title: string;
+  xAxisLabel?: string;
+  yAxisLabel?: string;
+  showLegend: boolean;
+}
+
+export interface FormBlockData {
+  fields: Array<{
+    id: string;
+    type: 'text' | 'email' | 'number' | 'select' | 'checkbox' | 'radio' | 'textarea';
+    label: string;
+    placeholder?: string;
+    required: boolean;
+    options?: string[];
+    validation?: {
+      pattern?: string;
+      min?: number;
+      max?: number;
+      message?: string;
+    };
+  }>;
+  submitText: string;
+  submitAction: string;
+  successMessage: string;
 }
 
 export interface ContentBlock {

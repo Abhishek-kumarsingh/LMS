@@ -1,0 +1,510 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  firstName String
+  lastName  String
+  role      Role     @default(STUDENT)
+  avatar    String?
+  bio       String?
+  phone     String?
+  timezone  String   @default("UTC")
+  language  String   @default("en")
+  isActive  Boolean  @default(true)
+  lastLogin DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Authentication
+  password String
+  emailVerified Boolean @default(false)
+  emailVerificationToken String?
+  passwordResetToken String?
+  passwordResetExpires DateTime?
+
+  // Relationships
+  enrollments CourseEnrollment[]
+  createdCourses Course[] @relation("CourseInstructor")
+  lessons Lesson[]
+  assignments Assignment[]
+  submissions AssignmentSubmission[]
+  grades Grade[]
+  discussionPosts DiscussionPost[]
+  discussionReplies DiscussionReply[]
+  calendarEvents CalendarEvent[]
+  notifications Notification[]
+  streamSessions StreamSession[]
+  chatMessages ChatMessage[]
+  quizAttempts QuizAttempt[]
+  
+  @@map("users")
+}
+
+enum Role {
+  STUDENT
+  INSTRUCTOR
+  ADMIN
+}
+
+model Course {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  code        String   @unique
+  category    String
+  level       String
+  duration    Int      // in hours
+  price       Float    @default(0)
+  currency    String   @default("USD")
+  thumbnail   String?
+  status      CourseStatus @default(DRAFT)
+  isPublished Boolean  @default(false)
+  maxStudents Int?
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Instructor
+  instructorId String
+  instructor   User @relation("CourseInstructor", fields: [instructorId], references: [id])
+
+  // Relationships
+  enrollments CourseEnrollment[]
+  lessons     Lesson[]
+  assignments Assignment[]
+  discussions Discussion[]
+  quizzes     Quiz[]
+  grades      Grade[]
+  calendarEvents CalendarEvent[]
+  analytics   CourseAnalytics?
+
+  @@map("courses")
+}
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model CourseEnrollment {
+  id           String   @id @default(cuid())
+  enrolledAt   DateTime @default(now())
+  completedAt  DateTime?
+  progress     Float    @default(0)
+  status       EnrollmentStatus @default(ACTIVE)
+  
+  // Relationships
+  userId   String
+  user     User   @relation(fields: [userId], references: [id])
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id])
+
+  @@unique([userId, courseId])
+  @@map("course_enrollments")
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  DROPPED
+  SUSPENDED
+}
+
+model Lesson {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  content     Json     // Rich content blocks
+  order       Int
+  duration    Int?     // in minutes
+  isPublished Boolean  @default(false)
+  videoUrl    String?
+  videoMetadata Json?
+  attachments Json?    // File attachments
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id])
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+  
+  quizzes Quiz[]
+  progress LessonProgress[]
+
+  @@map("lessons")
+}
+
+model LessonProgress {
+  id          String   @id @default(cuid())
+  completed   Boolean  @default(false)
+  timeSpent   Int      @default(0) // in seconds
+  lastAccessed DateTime @default(now())
+  
+  // Relationships
+  userId   String
+  user     User   @relation(fields: [userId], references: [id])
+  lessonId String
+  lesson   Lesson @relation(fields: [lessonId], references: [id])
+
+  @@unique([userId, lessonId])
+  @@map("lesson_progress")
+}
+
+model Assignment {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  instructions String
+  dueDate     DateTime
+  maxPoints   Int
+  submissionType SubmissionType
+  allowLateSubmissions Boolean @default(false)
+  latePenalty Float   @default(0)
+  groupAssignment Boolean @default(false)
+  rubric      Json?
+  attachments Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id])
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+  
+  submissions AssignmentSubmission[]
+  grades      Grade[]
+
+  @@map("assignments")
+}
+
+enum SubmissionType {
+  FILE
+  TEXT
+  URL
+  QUIZ
+}
+
+model AssignmentSubmission {
+  id          String   @id @default(cuid())
+  content     String?
+  attachments Json?
+  submittedAt DateTime @default(now())
+  status      SubmissionStatus @default(SUBMITTED)
+  
+  // Relationships
+  assignmentId String
+  assignment   Assignment @relation(fields: [assignmentId], references: [id])
+  studentId    String
+  student      User       @relation(fields: [studentId], references: [id])
+  
+  grade Grade?
+
+  @@unique([assignmentId, studentId])
+  @@map("assignment_submissions")
+}
+
+enum SubmissionStatus {
+  DRAFT
+  SUBMITTED
+  GRADED
+  RETURNED
+}
+
+model Grade {
+  id        String   @id @default(cuid())
+  points    Float
+  maxPoints Float
+  feedback  String?
+  gradedAt  DateTime @default(now())
+  
+  // Relationships
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id])
+  studentId String
+  student   User   @relation(fields: [studentId], references: [id])
+  assignmentId String?
+  assignment   Assignment? @relation(fields: [assignmentId], references: [id])
+  submissionId String? @unique
+  submission   AssignmentSubmission? @relation(fields: [submissionId], references: [id])
+  quizAttemptId String? @unique
+  quizAttempt   QuizAttempt? @relation(fields: [quizAttemptId], references: [id])
+
+  @@map("grades")
+}
+
+model Quiz {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  instructions String?
+  timeLimit   Int?     // in minutes
+  attempts    Int      @default(1)
+  shuffleQuestions Boolean @default(false)
+  showResults Boolean @default(true)
+  isPublished Boolean @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  courseId String?
+  course   Course? @relation(fields: [courseId], references: [id])
+  lessonId String?
+  lesson   Lesson? @relation(fields: [lessonId], references: [id])
+  
+  questions QuizQuestion[]
+  attempts  QuizAttempt[]
+
+  @@map("quizzes")
+}
+
+model QuizQuestion {
+  id          String   @id @default(cuid())
+  question    String
+  type        QuestionType
+  options     Json?    // For multiple choice questions
+  correctAnswer Json   // Correct answer(s)
+  explanation String?
+  points      Int      @default(1)
+  order       Int
+  
+  // Relationships
+  quizId String
+  quiz   Quiz   @relation(fields: [quizId], references: [id])
+  
+  responses QuizResponse[]
+
+  @@map("quiz_questions")
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  SHORT_ANSWER
+  ESSAY
+  FILL_BLANK
+}
+
+model QuizAttempt {
+  id          String   @id @default(cuid())
+  startedAt   DateTime @default(now())
+  submittedAt DateTime?
+  score       Float?
+  maxScore    Float?
+  timeSpent   Int?     // in seconds
+  
+  // Relationships
+  quizId String
+  quiz   Quiz   @relation(fields: [quizId], references: [id])
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+  
+  responses QuizResponse[]
+  grade     Grade?
+
+  @@map("quiz_attempts")
+}
+
+model QuizResponse {
+  id       String @id @default(cuid())
+  answer   Json   // User's answer
+  isCorrect Boolean?
+  points   Float  @default(0)
+  
+  // Relationships
+  attemptId  String
+  attempt    QuizAttempt  @relation(fields: [attemptId], references: [id])
+  questionId String
+  question   QuizQuestion @relation(fields: [questionId], references: [id])
+
+  @@unique([attemptId, questionId])
+  @@map("quiz_responses")
+}
+
+model Discussion {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  isLocked    Boolean  @default(false)
+  isPinned    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id])
+  
+  posts DiscussionPost[]
+
+  @@map("discussions")
+}
+
+model DiscussionPost {
+  id        String   @id @default(cuid())
+  content   String
+  isEdited  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  discussionId String
+  discussion   Discussion @relation(fields: [discussionId], references: [id])
+  authorId     String
+  author       User       @relation(fields: [authorId], references: [id])
+  
+  replies DiscussionReply[]
+
+  @@map("discussion_posts")
+}
+
+model DiscussionReply {
+  id        String   @id @default(cuid())
+  content   String
+  isEdited  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  postId   String
+  post     DiscussionPost @relation(fields: [postId], references: [id])
+  authorId String
+  author   User           @relation(fields: [authorId], references: [id])
+
+  @@map("discussion_replies")
+}
+
+model CalendarEvent {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  allDay      Boolean   @default(false)
+  type        EventType
+  location    String?
+  url         String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relationships
+  createdById String
+  createdBy   User   @relation(fields: [createdById], references: [id])
+  courseId    String?
+  course      Course? @relation(fields: [courseId], references: [id])
+
+  @@map("calendar_events")
+}
+
+enum EventType {
+  CLASS
+  ASSIGNMENT
+  EXAM
+  MEETING
+  DEADLINE
+  HOLIDAY
+  OTHER
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  title     String
+  message   String
+  type      NotificationType
+  isRead    Boolean  @default(false)
+  data      Json?    // Additional notification data
+  createdAt DateTime @default(now())
+
+  // Relationships
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@map("notifications")
+}
+
+enum NotificationType {
+  ASSIGNMENT_DUE
+  GRADE_POSTED
+  COURSE_UPDATE
+  MESSAGE
+  ANNOUNCEMENT
+  REMINDER
+}
+
+model StreamSession {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  streamUrl   String?
+  status      StreamStatus @default(SCHEDULED)
+  scheduledAt DateTime?
+  startedAt   DateTime?
+  endedAt     DateTime?
+  recordingUrl String?
+  maxViewers  Int?
+  currentViewers Int @default(0)
+  totalViews  Int @default(0)
+  chatEnabled Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  hostId String
+  host   User   @relation(fields: [hostId], references: [id])
+  
+  chatMessages ChatMessage[]
+
+  @@map("stream_sessions")
+}
+
+enum StreamStatus {
+  SCHEDULED
+  LIVE
+  ENDED
+  CANCELLED
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  message   String
+  timestamp DateTime @default(now())
+
+  // Relationships
+  userId   String
+  user     User   @relation(fields: [userId], references: [id])
+  streamId String
+  stream   StreamSession @relation(fields: [streamId], references: [id])
+
+  @@map("chat_messages")
+}
+
+model CourseAnalytics {
+  id              String   @id @default(cuid())
+  totalStudents   Int      @default(0)
+  activeStudents  Int      @default(0)
+  completionRate  Float    @default(0)
+  averageGrade    Float    @default(0)
+  totalTimeSpent  Int      @default(0) // in minutes
+  engagementScore Float    @default(0)
+  lastUpdated     DateTime @default(now())
+
+  // Relationships
+  courseId String @unique
+  course   Course @relation(fields: [courseId], references: [id])
+
+  @@map("course_analytics")
+}
